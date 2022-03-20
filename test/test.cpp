@@ -2,49 +2,47 @@
 #include "../include/tensor.hpp"
 #include "../third_party/catch.hpp"
 
-using std::operator""s;
+TEST_CASE("One dimensional tensor", "[add][subtract][multiply][divide]") {
+    auto t1 = tensor::Tensor<1, float>{0, 1, 2, 3, 4};
+    auto t2 = tensor::Tensor<1, float>{5, 6, 7, 8, 9};
 
-/*
-TEST_CASE("Search and insert strings", "[insert][search][string]") {
-    auto bf = bf::BloomFilter{3, 1e-2};
+    REQUIRE(t1.get({0}) == 0);
+    REQUIRE(t1.get({1}) == 1);
+    REQUIRE(t1.get({2}) == 2);
+    REQUIRE(t1.get({3}) == 3);
+    REQUIRE(t1.get({4}) == 4);
 
-    bf.insert("hello"s);
-    bf.insert("world"s);
-    bf.insert(""s);
+    REQUIRE(t2.get({0}) == 5);
+    REQUIRE(t2.get({1}) == 6);
+    REQUIRE(t2.get({2}) == 7);
+    REQUIRE(t2.get({3}) == 8);
+    REQUIRE(t2.get({4}) == 9);
 
-    REQUIRE(bf.search("hello"s));
-    REQUIRE(bf.search("world"s));
-    REQUIRE(bf.search(""s));
+    auto t3 = t1 + t2;
+    REQUIRE(t3.get({0}) == 5);
+    REQUIRE(t3.get({1}) == 7);
+    REQUIRE(t3.get({2}) == 9);
+    REQUIRE(t3.get({3}) == 11);
+    REQUIRE(t3.get({4}) == 13);
 
-    bf.clear();
+    auto t4 = t1 - t2;
+    REQUIRE(t4.get({0}) == -5);
+    REQUIRE(t4.get({1}) == -5);
+    REQUIRE(t4.get({2}) == -5);
+    REQUIRE(t4.get({3}) == -5);
+    REQUIRE(t4.get({4}) == -5);
 
-    REQUIRE(!bf.search("hello"s));
-    REQUIRE(!bf.search("world"s));
-    REQUIRE(!bf.search(""s));
+    auto t5 = t1 * t2;
+    REQUIRE(t5.get({0}) == 0);
+    REQUIRE(t5.get({1}) == 6);
+    REQUIRE(t5.get({2}) == 14);
+    REQUIRE(t5.get({3}) == 24);
+    REQUIRE(t5.get({4}) == 36);
+
+    auto t6 = t1 / t2;
+    REQUIRE(t6.get({0}) == 0.0);
+    REQUIRE(round(t6.get({1}) * 10e5) / 10e5 == round(1.0 / 6 * 10e5) / 10e5);
+    REQUIRE(round(t6.get({2}) * 10e5) / 10e5 == round(2.0 / 7 * 10e5) / 10e5);
+    REQUIRE(round(t6.get({3}) * 10e5) / 10e5 == round(3.0 / 8 * 10e5) / 10e5);
+    REQUIRE(round(t6.get({4}) * 10e5) / 10e5 == round(4.0 / 9 * 10e5) / 10e5);
 }
-
-TEST_CASE("Search and insert strings from a vector", "[insert][search][string]") {
-    auto bf = bf::BloomFilter(5, 1e-3);
-    auto words = std::vector<std::string>{"afopsiv"s, "coxpz"s, "pqeacxnvzm"s, "zm"s, "acxk"s};
-
-    for (const auto &word : words) {
-        bf.insert(word);
-        REQUIRE(bf.search(word));
-    }
-}
-
-TEST_CASE("Insert and search many", "[insert_many][search_many][int]") {
-    auto bf = bf::BloomFilter(12, 1e-4);
-    auto nums = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-
-    bf.insert_many(nums);
-    for (const auto &num : nums) {
-        REQUIRE(bf.search(num));
-    }
-
-    auto vals = bf.search_many(nums);
-    for (const auto &val : vals) {
-        REQUIRE(val);
-    }
-}
-*/

@@ -6,12 +6,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(tensor LANGUAGES CXX VERSION 1.0)
 
-option(BUILD "Build the binary" ON)
+option(BUILD "Build the binary" OFF)
 if(BUILD)
   add_executable(${PROJECT_NAME} main.cpp)
 endif()
 
-option(TESTING "Build tests binary using catch2" OFF)
+option(TESTING "Build tests binary using catch2" ON)
 if(TESTING)
   add_subdirectory(test)
 endif()

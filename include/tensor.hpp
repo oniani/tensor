@@ -3,16 +3,12 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <concepts>
-#include <cstring>
+#include <iomanip>
 #include <iostream>
-#include <numeric>
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 namespace tensor {
 
@@ -21,50 +17,92 @@ concept Arithmetic = std::is_arithmetic_v<T>;
 
 template <std::uint32_t Rank, Arithmetic T>
 class Tensor {
-    static_assert(Rank > 0, "Rank must be a positive integer.");
-
-    using Dims = std::array<std::uint32_t, Rank>;
+    static_assert(Rank >= 0, "Rank must be a non-negative integer.");
 
    private:
-    Dims m_dims;
+    friend class Tensor<Rank + 1, T>;
+    friend class Tensor<Rank - 1, T>;
+
     T* m_data;
+    std::array<std::uint32_t, Rank> m_dims;
     std::size_t m_size;
 
     /// Verifying that all of the numbers representing dimensions are positive.
-    [[nodiscard]] constexpr auto dimcheck(const Dims& dims) const {
+    [[nodiscard]] constexpr auto dimcheck(const std::array<std::uint32_t, Rank>& dims) const {
         if (std::find(dims.begin(), dims.end(), 0) != dims.end()) {
             throw std::domain_error("Zero dimension not allowed.");
         }
     }
 
    public:
-    /// Constructs a tensor via provided dimensions and a vector.
-    explicit constexpr Tensor(Dims dims, std::vector<T> data) {
-        dimcheck(dims);
-        m_size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<std::uint32_t>());
-        m_data = new T[m_size]{};
-        std::copy(data.begin(), data.end(), m_data);
-        m_dims = dims;
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Core
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Defines a constructor for an empty tensor.
+    Tensor() {
+        m_size = 0;
+        m_data = nullptr;
     }
 
-    /// Constructs a tensor via pointer.
-    explicit constexpr Tensor(Dims dims, T* data) {
-        dimcheck(dims);
-        m_size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<std::uint32_t>());
-        m_data = new T[m_size]{};
-        if (data) std::memcpy(m_data, data, m_size * sizeof(T));
-        m_dims = dims;
+    /// Defines a constructor for a tensor using an initializer list.
+    Tensor(std::initializer_list<T> list) {
+        m_data = nullptr;
+        m_size = 0;
+
+        if (list.size() == 0) {
+            return;
+        }
+
+        m_size = list.size();
+        m_dims[0] = m_size;
+        m_data = new T[m_size];
+
+        std::size_t idx = 0;
+        for (const T& val : list) {
+            m_data[idx++] = val;
+        }
+    }
+
+    /// Defines a constructor for an initializer list of tensors.
+    Tensor(std::initializer_list<Tensor<Rank - 1, T>> list) {
+        if (list.size() == 0) {
+            m_size = 0;
+            m_data = nullptr;
+            return;
+        }
+
+        std::size_t list_size = list.size();
+        std::size_t counter = 0;
+        for (const Tensor<Rank - 1, T>& t : list) {
+            if (counter == 0) {
+                m_dims[0] = list_size;
+                std::copy(t.m_dims.begin(), t.m_dims.begin() + Rank - 1, m_dims.begin() + 1);
+            }
+            counter += t.m_size;
+        }
+
+        m_size = counter;
+        m_data = new T[m_size];
+
+        counter = 0;
+        for (const Tensor<Rank - 1, T>& t : list) {
+            for (std::size_t idx = 0; idx < t.m_size; idx++) {
+                m_data[counter++] = t.m_data[idx];
+            }
+        }
     }
 
     /// Defines a copy constructor.
     explicit constexpr Tensor(const Tensor& rhs) {
         m_dims = rhs.m_dims;
         m_data = new T[rhs.m_size]{};
-        for (std::size_t idx = 0; idx < rhs.m_size; idx++) {
-            m_data[idx] = rhs.m_data[idx];
-        }
         m_size = rhs.m_size;
+        std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
     }
+
+    // TODO: Not implemented, yet.
+    constexpr Tensor& operator=(const Tensor& rhs){};
 
     /// Defines a move constructor.
     constexpr Tensor(Tensor&& rhs) noexcept
@@ -79,27 +117,23 @@ class Tensor {
     }
 
     /// Creates a copy constructor for the tensor.
-    [[nodiscard]] constexpr auto copy() const noexcept { return Tensor{m_dims, m_data}; }
+    /// TODO: Copy constructor + copy assignment is the way to go.
+    [[nodiscard]] constexpr auto copy() const noexcept {
+        Tensor t{};
+        t.m_dims = m_dims;
+        t.m_data = new T[m_size]{};
+        t.m_size = m_size;
+        std::copy(m_data, m_data + m_size, t.m_data);
+        return t;
+    }
 
     /// Getter methods for member variables.
-    [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
+    [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /// Overrides `<<` to be able to output the tensor.
-    ///
-    /// friend std::ostream& operator<<(std::ostream& stream, const Tensor& t) {
-    ///    auto data = t.data();
-    ///    for (int idx = N - 1; idx >= 0; idx--) {
-    ///        stream << "{";
-    ///        for (int d = 0; d < t.dims()[idx]; d++) {
-    ///            stream << *data++ << ", ";
-    ///        }
-    ///        stream << "}";
-    ///    }
-    ///    return stream;
-    ///}
-    ///
+    friend std::ostream& operator<<(std::ostream& os, const Tensor& a) {}
 
     [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
         if (idx < 0 or idx > m_size - 1) {
@@ -110,14 +144,14 @@ class Tensor {
 
     constexpr auto flat_print() const {
         std::cout << "flat_data { ";
-        for (std::size_t idx = 0; idx < m_size - 1; idx++) {
+        for (std::size_t idx = 0; idx < m_size; idx++) {
             std::cout << m_data[idx] << " ";
         }
         std::cout << "}" << std::endl;
     }
 
     /// Gets the value by specified indices.
-    [[nodiscard]] constexpr auto flat_get(const std::array<std::size_t, Rank> dims) const {
+    [[nodiscard]] constexpr auto get(const std::array<std::size_t, Rank> dims) const {
         int idx = 0;
         auto prod = m_size;
         for (std::size_t i = 0; i < Rank; i++) {
