@@ -1,6 +1,12 @@
+/// A zero-dependency tensor implementation based on C++ STL.
+
+#ifndef TENSOR_H
+#define TENSOR_H
+
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <cstring>
 #include <iostream>
 #include <numeric>
@@ -10,7 +16,10 @@
 
 namespace tensor {
 
-template <std::uint32_t Rank, typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>, T> >
+template <typename T>
+concept Arithmetic = std::is_arithmetic_v<T>;
+
+template <std::uint32_t Rank, Arithmetic T>
 class Tensor {
     static_assert(Rank > 0, "Rank must be a positive integer.");
 
@@ -21,7 +30,7 @@ class Tensor {
     T* m_data;
     std::size_t m_size;
 
-    // Verifying that all of the numbers representing dimensions are positive.
+    /// Verifying that all of the numbers representing dimensions are positive.
     [[nodiscard]] constexpr auto dimcheck(const Dims& dims) const {
         if (std::find(dims.begin(), dims.end(), 0) != dims.end()) {
             throw std::domain_error("Zero dimension not allowed.");
@@ -29,7 +38,7 @@ class Tensor {
     }
 
    public:
-    // Constructs a tensor via provided dimensions and a vector.
+    /// Constructs a tensor via provided dimensions and a vector.
     explicit constexpr Tensor(Dims dims, std::vector<T> data) {
         dimcheck(dims);
         m_size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<std::uint32_t>());
@@ -38,7 +47,7 @@ class Tensor {
         m_dims = dims;
     }
 
-    // Constructs a tensor via pointer.
+    /// Constructs a tensor via pointer.
     explicit constexpr Tensor(Dims dims, T* data) {
         dimcheck(dims);
         m_size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<std::uint32_t>());
@@ -47,7 +56,7 @@ class Tensor {
         m_dims = dims;
     }
 
-    // Defines a copy constructor.
+    /// Defines a copy constructor.
     explicit constexpr Tensor(const Tensor& rhs) {
         m_dims = rhs.m_dims;
         m_data = new T[rhs.m_size]{};
@@ -57,41 +66,40 @@ class Tensor {
         m_size = rhs.m_size;
     }
 
-    // Defines a move constructor.
-    constexpr Tensor(Tensor&& rhs) noexcept {
-        m_dims = rhs.m_dims;
-        m_data = rhs.m_data;
-        m_size = rhs.m_size;
+    /// Defines a move constructor.
+    constexpr Tensor(Tensor&& rhs) noexcept
+        : m_dims(rhs.m_dims), m_data(rhs.m_data), m_size(rhs.m_size) {
+        rhs.m_data = nullptr;
     }
 
-    // Frees the memory and points the dangling pointer to `nullptr`.
+    /// Frees the memory and points the dangling pointer to `nullptr`.
     ~Tensor() noexcept {
         delete[] m_data;
         m_data = nullptr;
     }
 
-    // Creates a copy constructor for the tensor.
+    /// Creates a copy constructor for the tensor.
     [[nodiscard]] constexpr auto copy() const noexcept { return Tensor{m_dims, m_data}; }
 
-    // Getter methods for member variables.
+    /// Getter methods for member variables.
     [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
-    // Overrides `<<` to be able to output the tensor.
-    //
-    // friend std::ostream& operator<<(std::ostream& stream, const Tensor& t) {
-    //    auto data = t.data();
-    //    for (int idx = N - 1; idx >= 0; idx--) {
-    //        stream << "{";
-    //        for (int d = 0; d < t.dims()[idx]; d++) {
-    //            stream << *data++ << ", ";
-    //        }
-    //        stream << "}";
-    //    }
-    //    return stream;
-    //}
-    //
+    /// Overrides `<<` to be able to output the tensor.
+    ///
+    /// friend std::ostream& operator<<(std::ostream& stream, const Tensor& t) {
+    ///    auto data = t.data();
+    ///    for (int idx = N - 1; idx >= 0; idx--) {
+    ///        stream << "{";
+    ///        for (int d = 0; d < t.dims()[idx]; d++) {
+    ///            stream << *data++ << ", ";
+    ///        }
+    ///        stream << "}";
+    ///    }
+    ///    return stream;
+    ///}
+    ///
 
     [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
         if (idx < 0 or idx > m_size - 1) {
@@ -108,7 +116,7 @@ class Tensor {
         std::cout << "}" << std::endl;
     }
 
-    // Gets the value by specified indices.
+    /// Gets the value by specified indices.
     [[nodiscard]] constexpr auto flat_get(const std::array<std::size_t, Rank> dims) const {
         int idx = 0;
         auto prod = m_size;
@@ -119,11 +127,11 @@ class Tensor {
         return m_data[idx];
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Basic arithmetic
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Basic arithmetic
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Adds the tensor to the other tensor.
+    /// Adds the tensor to the other tensor.
     [[nodiscard]] constexpr auto operator+(const Tensor& other) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -132,7 +140,7 @@ class Tensor {
         return tensor;
     }
 
-    // Subtracts the tensor from the other tensor.
+    /// Subtracts the tensor from the other tensor.
     [[nodiscard]] constexpr auto operator-(const Tensor& other) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -141,7 +149,7 @@ class Tensor {
         return tensor;
     }
 
-    // Multiplies the tensor by the other tensor.
+    /// Multiplies the tensor by the other tensor.
     [[nodiscard]] constexpr auto operator*(const Tensor& other) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -150,7 +158,7 @@ class Tensor {
         return tensor;
     }
 
-    // Divides the tensor by the other tensor.
+    /// Divides the tensor by the other tensor.
     [[nodiscard]] constexpr auto operator/(const Tensor& other) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -162,12 +170,12 @@ class Tensor {
         return tensor;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Basic arithmetic broadcasting
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Basic arithmetic broadcasting
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Broadcasts addition via the specified value.
-    template <typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>, U> >
+    /// Broadcasts addition via the specified value.
+    template <Arithmetic U>
     [[nodiscard]] constexpr auto operator+(const U& val) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -176,8 +184,8 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts subtraction via the specified value.
-    template <typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>, U> >
+    /// Broadcasts subtraction via the specified value.
+    template <Arithmetic U>
     [[nodiscard]] constexpr auto operator-(const U& val) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -186,8 +194,8 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts multiplication via the specified value.
-    template <typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>, U> >
+    /// Broadcasts multiplication via the specified value.
+    template <Arithmetic U>
     [[nodiscard]] constexpr auto operator*(const U& val) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -196,8 +204,8 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts divison via the specified value.
-    template <typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>, U> >
+    /// Broadcasts divison via the specified value.
+    template <Arithmetic U>
     [[nodiscard]] constexpr auto operator/(const U& val) const {
         if (val == 0) {
             throw std::domain_error("Division by zero.");
@@ -209,12 +217,12 @@ class Tensor {
         return tensor;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Handy broadcasting operations
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Handy broadcasting operations
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Broadcasts the power operation.
-    template <typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>, U> >
+    /// Broadcasts the power operation.
+    template <Arithmetic U>
     [[nodiscard]] constexpr auto pow(U exp) const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -223,7 +231,7 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts the square operation.
+    /// Broadcasts the square operation.
     [[nodiscard]] constexpr auto square() const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -232,7 +240,7 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts the square root operation.
+    /// Broadcasts the square root operation.
     [[nodiscard]] constexpr auto sqrt() const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -241,7 +249,7 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts the sin operation.
+    /// Broadcasts the sin operation.
     [[nodiscard]] constexpr auto sin() const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -250,7 +258,7 @@ class Tensor {
         return tensor;
     }
 
-    // Broadcasts the cos operation.
+    /// Broadcasts the cos operation.
     [[nodiscard]] constexpr auto cos() const {
         auto tensor = this->copy();
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
@@ -260,3 +268,5 @@ class Tensor {
     }
 };
 }  // namespace tensor
+
+#endif  // BF_H

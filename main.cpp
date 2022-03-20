@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "include/tensor.hxx"
+#include "include/tensor.hpp"
 
 // TODO:
 //   1. use Catch2 for testing.
@@ -56,10 +56,12 @@ int main() {
     // Flat print the contents of the data pointer
     t1.flat_print();
     t2.flat_print();
+
     (t1 + t2).flat_print();
     (t1 - t2).flat_print();
     (t1 * t2).flat_print();
     (t1 / t2).flat_print();
+
     (t1.pow(3)).flat_print();
     (t1.square()).flat_print();
     (t1.sqrt()).flat_print();

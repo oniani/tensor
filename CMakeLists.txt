@@ -4,11 +4,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-project(tensor VERSION 1.0 LANGUAGES CXX)
+project(tensor LANGUAGES CXX VERSION 1.0)
 
-add_executable(${PROJECT_NAME} main.cxx)
+option(BUILD "Build the binary" ON)
+if(BUILD)
+  add_executable(${PROJECT_NAME} main.cpp)
+endif()
 
-file(GLOB_RECURSE FILES *.cxx *.hxx)
+option(TESTING "Build tests binary using catch2" OFF)
+if(TESTING)
+  add_subdirectory(test)
+endif()
+
+file(GLOB_RECURSE FILES *.cpp *.hpp)
 
 find_program(CLANG_FORMAT clang-format)
 if(CLANG_FORMAT)
