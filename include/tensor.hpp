@@ -133,7 +133,7 @@ class Tensor {
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /// Overrides `<<` to be able to output the tensor.
-    friend std::ostream& operator<<(std::ostream& os, const Tensor& a) {}
+    // friend std::ostream& operator<<(std::ostream& os, const Tensor& a) {}
 
     [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
         if (idx < 0 or idx > m_size - 1) {
@@ -162,7 +162,7 @@ class Tensor {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Basic arithmetic
+    /// Basic arithmetic operators
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Adds the tensor to the other tensor.
@@ -202,6 +202,105 @@ class Tensor {
             tensor[idx] /= other[idx];
         }
         return tensor;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Comparsion operators
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// Returns true if the tensor is equal to the other tensor, false otherwise.
+    [[nodiscard]] constexpr auto operator==(const Tensor& other) const {
+        if (m_size != other.size()) {
+            return false;
+        }
+        if (m_dims != other.dims()) {
+            return false;
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) != other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is not equal to the other tensor, false otherwise.
+    [[nodiscard]] constexpr auto operator!=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            return true;
+        }
+        if (m_dims != other.dims()) {
+            return true;
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) == other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is greater than the other tensor in all element-wise comparisons.
+    [[nodiscard]] constexpr auto operator>(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) <= other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is greater than or equal the other tensor in all element-wise
+    /// comparisons.
+    [[nodiscard]] constexpr auto operator>=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) < other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is less than the other tensor in all element-wise comparisons.
+    [[nodiscard]] constexpr auto operator<(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) >= other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is less than or equal the other tensor in all element-wise
+    /// comparisons.
+    [[nodiscard]] constexpr auto operator<=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; idx++) {
+            if (this->operator[](idx) > other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
