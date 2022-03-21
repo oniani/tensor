@@ -8,6 +8,7 @@
 #include <concepts>
 #include <iomanip>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 namespace tensor {
@@ -15,35 +16,35 @@ namespace tensor {
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
-template <std::uint32_t Rank, Arithmetic T>
+template <std::size_t Rank, Arithmetic T>
 class Tensor {
     static_assert(Rank > 0, "Rank must be a positive integer.");
 
    private:
     T* m_data;
-    std::array<std::uint32_t, Rank> m_dims;
+    std::array<std::size_t, Rank> m_dims;
     std::size_t m_size;
-    std::array<std::uint32_t, Rank> m_strides;
+    std::array<std::size_t, Rank> m_strides;
 
    public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /// Core
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Defines a constructor for an empty tensor.
-    explicit constexpr Tensor() {
+    // Constructs an empty tensor.
+    constexpr Tensor() {
         m_data = nullptr;
-        m_dims = std::array<std::uint32_t, Rank>{};
+        m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
-        m_strides = std::array<std::uint32_t, Rank>{};
+        m_strides = std::array<std::size_t, Rank>{};
     }
 
-    /// Defines a constructor for a tensor using an initializer list.
+    /// Constructs a one-dimensional tensor.
     constexpr Tensor(std::initializer_list<T> v_list) {
         m_data = nullptr;
-        m_dims = std::array<std::uint32_t, Rank>{};
+        m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
-        m_strides = std::array<std::uint32_t, Rank>{};
+        m_strides = std::array<std::size_t, Rank>{};
 
         if (v_list.size() == 0) {
             return;
@@ -59,13 +60,13 @@ class Tensor {
         std::copy(v_list.begin(), v_list.end(), m_data);
     }
 
-    /// Defines a constructor for an initializer list of tensors.
+    /// Constructs an arbitrary-dimensional tensor.
     constexpr Tensor(std::initializer_list<Tensor<Rank, T>> t_list) {
         if (t_list.size() == 0) {
             m_data = nullptr;
-            m_dims = std::array<std::uint32_t, Rank>{};
+            m_dims = std::array<std::size_t, Rank>{};
             m_size = 0;
-            m_strides = std::array<std::uint32_t, Rank>{};
+            m_strides = std::array<std::size_t, Rank>{};
             return;
         }
 
@@ -95,8 +96,21 @@ class Tensor {
         }
     }
 
+    /// Constructs a tensor with the provided dimensions.
+    constexpr Tensor(const std::array<std::size_t, Rank> dims) {
+        m_dims = dims;
+        m_size = std::accumulate(begin(dims), end(dims), 1, std::multiplies<std::size_t>());
+        m_data = new T[m_size];
+
+        auto prod = static_cast<float>(m_size);
+        for (std::size_t idx = 0; idx < Rank; idx++) {
+            prod /= m_dims[idx];
+            m_strides[idx] = static_cast<std::size_t>(prod);
+        }
+    }
+
     /// Defines a copy constructor.
-    explicit constexpr Tensor(const Tensor& rhs) {
+    constexpr Tensor(const Tensor& rhs) {
         m_data = new T[rhs.m_size]{};
         m_dims = rhs.m_dims;
         m_size = rhs.m_size;
@@ -166,14 +180,6 @@ class Tensor {
         }
         return m_data[flat_idx];
     }
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Useful constructors
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // TODO: Need to first write a function that allows for initialization via dimensions.
-    template <std::size_t Size>
-    [[nodiscard]] constexpr auto zeros(std::array<std::uint32_t, Size> dims) {}
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /// Basic arithmetic operators
@@ -414,6 +420,75 @@ class Tensor {
         return tensor;
     }
 };
+
+namespace builder {
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/// Useful constructors
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Constructs a tensor of zeros with the provided dimensions.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto zeros(std::array<std::size_t, Rank> dims) {
+    auto tensor = Tensor<Rank, T>(dims);
+    for (std::size_t idx = 0; idx < tensor.size(); idx++) {
+        tensor[idx] = static_cast<T>(0);
+    }
+    return tensor;
+}
+
+/// Constructs a tensor of ones with the provided dimensions.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto ones(std::array<std::size_t, Rank> dims) {
+    auto tensor = Tensor<Rank, T>(dims);
+    for (std::size_t idx = 0; idx < tensor.size(); idx++) {
+        tensor[idx] = static_cast<T>(1);
+    }
+    return tensor;
+}
+
+/// Constructs a tensor of `x`s with the provided dimensions.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto xs(std::array<std::size_t, Rank> dims, const T x) {
+    auto tensor = Tensor<Rank, T>();
+    for (std::size_t idx = 0; idx < tensor.size(); idx++) {
+        tensor[idx] = static_cast<T>(x);
+    }
+    return tensor;
+}
+
+/// Constructs a tensor of zeros with the shape that matches that of the provided tensor.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto zeros_like(const Tensor<Rank, T>& t) {
+    auto tensor = Tensor<Rank, T>(t.dims());
+    for (std::size_t idx = 0; idx < t.size(); idx++) {
+        tensor[idx] = static_cast<T>(0);
+    }
+    return tensor;
+}
+
+/// Constructs a tensor of ones with the shape that matches that of the provided tensor.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto ones_like(const Tensor<Rank, T>& t) {
+    auto tensor = Tensor<Rank, T>(t.dims());
+    for (std::size_t idx = 0; idx < t.size(); idx++) {
+        tensor[idx] = static_cast<T>(1);
+    }
+    return tensor;
+}
+
+/// Constructs a tensor of `x`s with the shape that matches that of the provided tensor.
+template <std::size_t Rank, Arithmetic T>
+[[nodiscard]] constexpr auto xs_like(const Tensor<Rank, T>& t, const T x) {
+    auto tensor = Tensor(t.dims());
+    for (std::size_t idx = 0; idx < t.size(); idx++) {
+        tensor[idx] = static_cast<T>(x);
+    }
+    return tensor;
+}
+
+}  // namespace builder
+
 }  // namespace tensor
 
 #endif  // BF_H
