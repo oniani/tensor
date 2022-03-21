@@ -17,22 +17,13 @@ concept Arithmetic = std::is_arithmetic_v<T>;
 
 template <std::uint32_t Rank, Arithmetic T>
 class Tensor {
-    static_assert(Rank >= 0, "Rank must be a non-negative integer.");
+    static_assert(Rank > 0, "Rank must be a positive integer.");
 
    private:
-    friend class Tensor<Rank + 1, T>;
-    friend class Tensor<Rank - 1, T>;
-
     T* m_data;
     std::array<std::uint32_t, Rank> m_dims;
     std::size_t m_size;
-
-    /// Verifying that all of the numbers representing dimensions are positive.
-    [[nodiscard]] constexpr auto dimcheck(const std::array<std::uint32_t, Rank>& dims) const {
-        if (std::find(dims.begin(), dims.end(), 0) != dims.end()) {
-            throw std::domain_error("Zero dimension not allowed.");
-        }
-    }
+    std::array<std::uint32_t, Rank> m_strides;
 
    public:
     /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,64 +31,76 @@ class Tensor {
     /////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Defines a constructor for an empty tensor.
-    Tensor() {
-        m_size = 0;
+    explicit constexpr Tensor() {
         m_data = nullptr;
+        m_dims = std::array<std::uint32_t, Rank>{};
+        m_size = 0;
+        m_strides = std::array<std::uint32_t, Rank>{};
     }
 
     /// Defines a constructor for a tensor using an initializer list.
-    Tensor(std::initializer_list<T> list) {
+    constexpr Tensor(std::initializer_list<T> v_list) {
         m_data = nullptr;
+        m_dims = std::array<std::uint32_t, Rank>{};
         m_size = 0;
+        m_strides = std::array<std::uint32_t, Rank>{};
 
-        if (list.size() == 0) {
+        if (v_list.size() == 0) {
             return;
         }
 
-        m_size = list.size();
-        m_dims[0] = m_size;
-        m_data = new T[m_size];
+        auto size = v_list.size();
 
-        std::size_t idx = 0;
-        for (const T& val : list) {
-            m_data[idx++] = val;
-        }
+        m_data = new T[size];
+        m_dims[0] = size;
+        m_size = size;
+        m_strides[0] = 1;
+
+        std::copy(v_list.begin(), v_list.end(), m_data);
     }
 
     /// Defines a constructor for an initializer list of tensors.
-    Tensor(std::initializer_list<Tensor<Rank - 1, T>> list) {
-        if (list.size() == 0) {
-            m_size = 0;
+    constexpr Tensor(std::initializer_list<Tensor<Rank, T>> t_list) {
+        if (t_list.size() == 0) {
             m_data = nullptr;
+            m_dims = std::array<std::uint32_t, Rank>{};
+            m_size = 0;
+            m_strides = std::array<std::uint32_t, Rank>{};
             return;
         }
 
-        std::size_t list_size = list.size();
-        std::size_t counter = 0;
-        for (const Tensor<Rank - 1, T>& t : list) {
-            if (counter == 0) {
-                m_dims[0] = list_size;
-                std::copy(t.m_dims.begin(), t.m_dims.begin() + Rank - 1, m_dims.begin() + 1);
+        std::size_t size = 0;
+        for (const Tensor<Rank, T>& t : t_list) {
+            if (size == 0) {
+                m_dims[0] = t_list.size();
+                auto t_dims = t.dims();
+                std::copy(t.m_dims.begin(), t.m_dims.begin() + Rank, m_dims.begin() + 1);
             }
-            counter += t.m_size;
+            size += t.size();
+        }
+        m_data = new T[size];
+        m_size = size;
+
+        std::size_t acc_idx = 0;
+        for (const Tensor<Rank, T>& t : t_list) {
+            for (std::size_t idx = 0; idx < t.size(); idx++) {
+                m_data[acc_idx++] = t.m_data[idx];
+            }
         }
 
-        m_size = counter;
-        m_data = new T[m_size];
-
-        counter = 0;
-        for (const Tensor<Rank - 1, T>& t : list) {
-            for (std::size_t idx = 0; idx < t.m_size; idx++) {
-                m_data[counter++] = t.m_data[idx];
-            }
+        auto prod = static_cast<float>(m_size);
+        for (std::size_t idx = 0; idx < Rank; idx++) {
+            prod /= m_dims[idx];
+            m_strides[idx] = static_cast<std::size_t>(prod);
         }
     }
 
     /// Defines a copy constructor.
     explicit constexpr Tensor(const Tensor& rhs) {
-        m_dims = rhs.m_dims;
         m_data = new T[rhs.m_size]{};
+        m_dims = rhs.m_dims;
         m_size = rhs.m_size;
+        m_strides = rhs.m_strides;
         std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
     }
 
@@ -106,8 +109,20 @@ class Tensor {
 
     /// Defines a move constructor.
     constexpr Tensor(Tensor&& rhs) noexcept
-        : m_dims(rhs.m_dims), m_data(rhs.m_data), m_size(rhs.m_size) {
+        : m_data(rhs.m_data), m_dims(rhs.m_dims), m_size(rhs.m_size), m_strides(rhs.m_strides) {
         rhs.m_data = nullptr;
+    }
+
+    /// Creates a copy constructor for the tensor.
+    /// TODO: Copy constructor + copy assignment is the way to go.
+    [[nodiscard]] constexpr auto copy() const noexcept {
+        Tensor t{};
+        t.m_data = new T[m_size]{};
+        t.m_dims = m_dims;
+        t.m_size = m_size;
+        t.m_strides = m_strides;
+        std::copy(m_data, m_data + m_size, t.m_data);
+        return t;
     }
 
     /// Frees the memory and points the dangling pointer to `nullptr`.
@@ -116,16 +131,9 @@ class Tensor {
         m_data = nullptr;
     }
 
-    /// Creates a copy constructor for the tensor.
-    /// TODO: Copy constructor + copy assignment is the way to go.
-    [[nodiscard]] constexpr auto copy() const noexcept {
-        Tensor t{};
-        t.m_dims = m_dims;
-        t.m_data = new T[m_size]{};
-        t.m_size = m_size;
-        std::copy(m_data, m_data + m_size, t.m_data);
-        return t;
-    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Convenience
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Getter methods for member variables.
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
@@ -152,14 +160,20 @@ class Tensor {
 
     /// Gets the value by specified indices.
     [[nodiscard]] constexpr auto get(const std::array<std::size_t, Rank> dims) const {
-        int idx = 0;
-        auto prod = m_size;
-        for (std::size_t i = 0; i < Rank; i++) {
-            prod /= m_dims[i];
-            idx += dims[i] * prod;
+        std::size_t flat_idx = 0;
+        for (std::size_t idx = 0; idx < Rank; idx++) {
+            flat_idx += dims[idx] * m_strides[idx];
         }
-        return m_data[idx];
+        return m_data[flat_idx];
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Useful constructors
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: Need to first write a function that allows for initialization via dimensions.
+    template <std::size_t Size>
+    [[nodiscard]] constexpr auto zeros(std::array<std::uint32_t, Size> dims) {}
 
     /////////////////////////////////////////////////////////////////////////////////////////////////
     /// Basic arithmetic operators
