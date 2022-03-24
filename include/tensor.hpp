@@ -27,12 +27,12 @@ class Tensor {
     std::array<std::size_t, Rank> m_strides;
 
    public:
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Core
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Constructs an empty tensor.
-    constexpr Tensor() {
+    /// Constructs an empty tensor.
+    constexpr Tensor() noexcept {
         m_data = nullptr;
         m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
@@ -40,7 +40,7 @@ class Tensor {
     }
 
     /// Constructs a one-dimensional tensor.
-    constexpr Tensor(std::initializer_list<T> v_list) {
+    constexpr Tensor(std::initializer_list<T> v_list) noexcept {
         m_data = nullptr;
         m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
@@ -50,9 +50,9 @@ class Tensor {
             return;
         }
 
-        auto size = v_list.size();
+        std::size_t size = v_list.size();
 
-        m_data = new T[size];
+        m_data = new T[size]{};
         m_dims[0] = size;
         m_size = size;
         m_strides[0] = 1;
@@ -61,7 +61,7 @@ class Tensor {
     }
 
     /// Constructs an arbitrary-dimensional tensor.
-    constexpr Tensor(std::initializer_list<Tensor<Rank, T>> t_list) {
+    constexpr Tensor(std::initializer_list<Tensor<Rank, T>> t_list) noexcept {
         if (t_list.size() == 0) {
             m_data = nullptr;
             m_dims = std::array<std::size_t, Rank>{};
@@ -79,7 +79,7 @@ class Tensor {
             }
             size += t.size();
         }
-        m_data = new T[size];
+        m_data = new T[size]{};
         m_size = size;
 
         std::size_t acc_idx = 0;
@@ -97,10 +97,10 @@ class Tensor {
     }
 
     /// Constructs a tensor with the provided dimensions.
-    constexpr Tensor(const std::array<std::size_t, Rank> dims) {
+    constexpr Tensor(const std::array<std::size_t, Rank> dims) noexcept {
         m_dims = dims;
         m_size = std::accumulate(begin(dims), end(dims), 1, std::multiplies<std::size_t>());
-        m_data = new T[m_size];
+        m_data = new T[m_size]{};
 
         auto prod = static_cast<float>(m_size);
         for (std::size_t idx = 0; idx < Rank; idx++) {
@@ -110,7 +110,7 @@ class Tensor {
     }
 
     /// Defines a copy constructor.
-    constexpr Tensor(const Tensor& rhs) {
+    constexpr Tensor(const Tensor& rhs) noexcept {
         m_data = new T[rhs.m_size]{};
         m_dims = rhs.m_dims;
         m_size = rhs.m_size;
@@ -118,25 +118,10 @@ class Tensor {
         std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
     }
 
-    // TODO: Not implemented, yet.
-    constexpr Tensor& operator=(const Tensor& rhs){};
-
     /// Defines a move constructor.
     constexpr Tensor(Tensor&& rhs) noexcept
         : m_data(rhs.m_data), m_dims(rhs.m_dims), m_size(rhs.m_size), m_strides(rhs.m_strides) {
         rhs.m_data = nullptr;
-    }
-
-    /// Creates a copy constructor for the tensor.
-    /// TODO: Copy constructor + copy assignment is the way to go.
-    [[nodiscard]] constexpr auto copy() const noexcept {
-        Tensor t{};
-        t.m_data = new T[m_size]{};
-        t.m_dims = m_dims;
-        t.m_size = m_size;
-        t.m_strides = m_strides;
-        std::copy(m_data, m_data + m_size, t.m_data);
-        return t;
     }
 
     /// Frees the memory and points the dangling pointer to `nullptr`.
@@ -145,9 +130,9 @@ class Tensor {
         m_data = nullptr;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Convenience
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Getter methods for member variables.
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
@@ -155,7 +140,12 @@ class Tensor {
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /// Overrides `<<` to be able to output the tensor.
-    // friend std::ostream& operator<<(std::ostream& os, const Tensor& a) {}
+    friend std::ostream& operator<<(std::ostream& os, const Tensor& tensor) {
+        os << "{ ";
+        os << "TO BE IMPLEMENTED";
+        os << " }";
+        return os;
+    }
 
     [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
         if (idx < 0 or idx > m_size - 1) {
@@ -181,13 +171,13 @@ class Tensor {
         return m_data[flat_idx];
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Basic arithmetic operators
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Adds the tensor to the other tensor.
     [[nodiscard]] constexpr auto operator+(const Tensor& other) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] += other[idx];
         }
@@ -196,7 +186,7 @@ class Tensor {
 
     /// Subtracts the tensor from the other tensor.
     [[nodiscard]] constexpr auto operator-(const Tensor& other) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] -= other[idx];
         }
@@ -205,7 +195,7 @@ class Tensor {
 
     /// Multiplies the tensor by the other tensor.
     [[nodiscard]] constexpr auto operator*(const Tensor& other) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] *= other[idx];
         }
@@ -214,7 +204,7 @@ class Tensor {
 
     /// Divides the tensor by the other tensor.
     [[nodiscard]] constexpr auto operator/(const Tensor& other) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             if (other[idx] == 0) {
                 throw std::domain_error("Division by zero.");
@@ -224,9 +214,9 @@ class Tensor {
         return tensor;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Comparsion operators
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Returns true if the tensor is equal to the other tensor, false otherwise.
     [[nodiscard]] constexpr auto operator==(const Tensor& other) const {
@@ -323,14 +313,14 @@ class Tensor {
         return true;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Basic arithmetic broadcasting
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Broadcasts addition via the specified value.
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator+(const U& val) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] += val;
         }
@@ -340,7 +330,7 @@ class Tensor {
     /// Broadcasts subtraction via the specified value.
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator-(const U& val) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] -= val;
         }
@@ -350,7 +340,7 @@ class Tensor {
     /// Broadcasts multiplication via the specified value.
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator*(const U& val) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] *= val;
         }
@@ -363,21 +353,21 @@ class Tensor {
         if (val == 0) {
             throw std::domain_error("Division by zero.");
         }
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] /= val;
         }
         return tensor;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     /// Handy broadcasting operations
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Broadcasts the power operation.
     template <Arithmetic U>
     [[nodiscard]] constexpr auto pow(U exp) const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] = std::pow(tensor[idx], exp);
         }
@@ -386,7 +376,7 @@ class Tensor {
 
     /// Broadcasts the square operation.
     [[nodiscard]] constexpr auto square() const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] = std::pow(tensor[idx], 2);
         }
@@ -395,7 +385,7 @@ class Tensor {
 
     /// Broadcasts the square root operation.
     [[nodiscard]] constexpr auto sqrt() const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] = std::sqrt(tensor[idx]);
         }
@@ -404,7 +394,7 @@ class Tensor {
 
     /// Broadcasts the sin operation.
     [[nodiscard]] constexpr auto sin() const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] = std::sin(tensor[idx]);
         }
@@ -413,7 +403,7 @@ class Tensor {
 
     /// Broadcasts the cos operation.
     [[nodiscard]] constexpr auto cos() const {
-        auto tensor = this->copy();
+        auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); idx++) {
             tensor[idx] = std::cos(tensor[idx]);
         }
@@ -421,11 +411,11 @@ class Tensor {
     }
 };
 
-namespace builder {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Useful builders
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-/// Useful constructors
-/////////////////////////////////////////////////////////////////////////////////////////////////
+namespace builder {
 
 /// Constructs a tensor of zeros with the provided dimensions.
 template <std::size_t Rank, Arithmetic T>
@@ -483,6 +473,18 @@ template <std::size_t Rank, Arithmetic T>
     auto tensor = Tensor(t.dims());
     for (std::size_t idx = 0; idx < t.size(); idx++) {
         tensor[idx] = static_cast<T>(x);
+    }
+    return tensor;
+}
+
+/// Constructs a one-dimensional tensor including values from begin to end with the given stride.
+template <Arithmetic T>
+[[nodiscard]] constexpr auto range1d(const T begin, const T end, const T stride) {
+    auto dims = std::array<std::size_t, 1>{static_cast<std::size_t>((end - begin) / stride)};
+    auto tensor = Tensor<1, T>(dims);
+    std::size_t idx = 0;
+    for (T val = begin; val < end; val += stride) {
+        tensor[idx++] = val;
     }
     return tensor;
 }
