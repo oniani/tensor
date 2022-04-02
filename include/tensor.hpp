@@ -16,6 +16,8 @@ namespace tensor {
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
+// Tensor {{{
+
 template <std::size_t Rank, Arithmetic T>
 class Tensor {
     static_assert(Rank > 0, "Rank must be a positive integer.");
@@ -27,9 +29,7 @@ class Tensor {
     std::array<std::size_t, Rank> m_strides;
 
    public:
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Core
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Core {{{
 
     /// Constructs an empty tensor.
     constexpr Tensor() noexcept {
@@ -130,23 +130,11 @@ class Tensor {
         m_data = nullptr;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Convenience
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // }}}
 
-    /// Getter methods for member variables.
-    [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
-    [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
-    [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
+    // Convenience {{{
 
-    /// Overrides `<<` to be able to output the tensor.
-    friend std::ostream& operator<<(std::ostream& os, const Tensor<Rank, T>& tensor) {}
-
-    consteval void print() {
-        auto _ = __print(m_data, m_dims.data(), Rank);
-        std::cout << '\n';
-    }
-
+    /// Helps priting a tensor.
     consteval const T* __print(const T* data, const std::size_t* dims, const std::size_t rank) {
         const char* p_sep = "";
         std::cout << '{';
@@ -166,20 +154,29 @@ class Tensor {
         return data;
     }
 
-    [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
-        if (idx < 0 or idx > m_size - 1) {
-            throw std::out_of_range("Index out of bounds.");
-        }
-        return m_data[idx];
+    /// Prints the tensor.
+    consteval void print() {
+        auto _ = __print(m_data, m_dims.data(), Rank);
+        std::cout << '\n';
     }
 
+    /// Prints a flat representation of the tensor.
     constexpr auto flat_print() const {
         std::cout << "flat_data { ";
         for (std::size_t idx = 0; idx < m_size; ++idx) {
-            std::cout << m_data[idx] << " ";
+            std::cout << m_data[idx] << ' ';
         }
-        std::cout << "}" << std::endl;
+        std::cout << '}' << std::endl;
     }
+
+    // }}}
+
+    // Core utilities {{{
+
+    /// Getter methods for member variables.
+    [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
+    [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
+    [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /// Gets the value by specified indices.
     [[nodiscard]] constexpr auto get(const std::array<std::size_t, Rank> dims) const {
@@ -190,9 +187,17 @@ class Tensor {
         return m_data[flat_idx];
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Basic arithmetic operators
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Operator for getting data.
+    [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
+        if (idx < 0 or idx > m_size - 1) {
+            throw std::out_of_range("Index out of bounds.");
+        }
+        return m_data[idx];
+    }
+
+    // }}}
+
+    // Basic arithmetic operators {{{
 
     /// Adds the tensor to the other tensor.
     [[nodiscard]] constexpr auto operator+(const Tensor& other) const {
@@ -233,108 +238,9 @@ class Tensor {
         return tensor;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Comparsion operators
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // }}}
 
-    /// Returns true if the tensor is equal to the other tensor, false otherwise.
-    [[nodiscard]] constexpr auto operator==(const Tensor& other) const {
-        if (m_size != other.size()) {
-            return false;
-        }
-        if (m_dims != other.dims()) {
-            return false;
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) != other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// Returns true if the tensor is not equal to the other tensor, false otherwise.
-    [[nodiscard]] constexpr auto operator!=(const Tensor& other) const {
-        if (m_size != other.size()) {
-            return true;
-        }
-        if (m_dims != other.dims()) {
-            return true;
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) == other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// Returns true if the tensor is greater than the other tensor in all element-wise comparisons.
-    [[nodiscard]] constexpr auto operator>(const Tensor& other) const {
-        if (m_size != other.size()) {
-            throw std::runtime_error("Tensor size mismatch.");
-        }
-        if (m_dims != other.dims()) {
-            throw std::runtime_error("Tensor dimension mismatch.");
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) <= other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// Returns true if the tensor is greater than or equal the other tensor in all element-wise
-    /// comparisons.
-    [[nodiscard]] constexpr auto operator>=(const Tensor& other) const {
-        if (m_size != other.size()) {
-            throw std::runtime_error("Tensor size mismatch.");
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) < other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// Returns true if the tensor is less than the other tensor in all element-wise comparisons.
-    [[nodiscard]] constexpr auto operator<(const Tensor& other) const {
-        if (m_size != other.size()) {
-            throw std::runtime_error("Tensor size mismatch.");
-        }
-        if (m_dims != other.dims()) {
-            throw std::runtime_error("Tensor dimension mismatch.");
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) >= other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /// Returns true if the tensor is less than or equal the other tensor in all element-wise
-    /// comparisons.
-    [[nodiscard]] constexpr auto operator<=(const Tensor& other) const {
-        if (m_size != other.size()) {
-            throw std::runtime_error("Tensor size mismatch.");
-        }
-        if (m_dims != other.dims()) {
-            throw std::runtime_error("Tensor dimension mismatch.");
-        }
-        for (std::size_t idx = 0; idx < m_size; ++idx) {
-            if (this->operator[](idx) > other[idx]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Basic arithmetic broadcasting
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Basic arithmetic broadcasting {{{
 
     /// Broadcasts addition via the specified value.
     template <Arithmetic U>
@@ -379,9 +285,108 @@ class Tensor {
         return tensor;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Handy broadcasting operations
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // }}}
+
+    // Comparsion operators {{{
+
+    /// Returns true if the tensor is equal to the other tensor, false otherwise.
+    [[nodiscard]] constexpr auto operator==(const Tensor& other) const {
+        if (m_size != other.size()) {
+            return false;
+        }
+        if (m_dims != other.dims()) {
+            return false;
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] != other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is not equal to the other tensor, false otherwise.
+    [[nodiscard]] constexpr auto operator!=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            return true;
+        }
+        if (m_dims != other.dims()) {
+            return true;
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] == other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is greater than the other tensor in all element-wise comparisons.
+    [[nodiscard]] constexpr auto operator>(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] <= other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is greater than or equal the other tensor in all element-wise
+    /// comparisons.
+    [[nodiscard]] constexpr auto operator>=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] < other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is less than the other tensor in all element-wise comparisons.
+    [[nodiscard]] constexpr auto operator<(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] >= other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// Returns true if the tensor is less than or equal the other tensor in all element-wise
+    /// comparisons.
+    [[nodiscard]] constexpr auto operator<=(const Tensor& other) const {
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
+        }
+        if (m_dims != other.dims()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (std::size_t idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] > other[idx]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // }}}
+
+    // Handy broadcasting operations {{{
 
     /// Broadcasts the power operation.
     template <Arithmetic U>
@@ -428,11 +433,11 @@ class Tensor {
         }
         return tensor;
     }
+
+    // }}}
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/// Useful builders
-////////////////////////////////////////////////////////////////////////////////////////////////////
+// }}}
 
 namespace builder {
 
