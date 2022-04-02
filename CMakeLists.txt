@@ -1,17 +1,19 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(tensor LANGUAGES CXX VERSION 1.0)
 
-option(BUILD "Build the binary" OFF)
+option(BUILD "Enable building the binary" OFF)
 if(BUILD)
   add_executable(${PROJECT_NAME} main.cpp)
 endif()
 
-option(TESTING "Build tests binary using catch2" ON)
+option(TESTING "Enable testing" ON)
 if(TESTING)
   add_subdirectory(test)
 endif()

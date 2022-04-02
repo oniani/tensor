@@ -5,7 +5,9 @@ Efficient tensors in C++.
 ## Testing
 
 ```console
-mkdir build && cd build && cmake -D CMAKE_CXX_COMPILER=clang++ .. && make -j4 && ./test/tests
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_CXX_COMPILER=clang++ .. && cmake --build . --config Release -- -j 4 && ./test/tests
 ```
 
 ## References

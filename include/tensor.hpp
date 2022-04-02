@@ -3,6 +3,8 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
+// include {{{
+
 #include <array>
 #include <cmath>
 #include <concepts>
@@ -11,15 +13,19 @@
 #include <numeric>
 #include <stdexcept>
 
-namespace tensor {
+// }}}
+
+// core {{{
+
+namespace core {
 
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
-// Tensor {{{
+// tensor {{{
 
 template <std::size_t Rank, Arithmetic T>
-class Tensor {
+class tensor {
     static_assert(Rank > 0, "Rank must be a positive integer.");
 
    private:
@@ -32,7 +38,7 @@ class Tensor {
     // Core {{{
 
     /// Constructs an empty tensor.
-    constexpr Tensor() noexcept {
+    constexpr tensor() noexcept {
         m_data = nullptr;
         m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
@@ -40,7 +46,7 @@ class Tensor {
     }
 
     /// Constructs a one-dimensional tensor.
-    constexpr Tensor(std::initializer_list<T> v_list) noexcept {
+    constexpr tensor(std::initializer_list<T> v_list) noexcept {
         m_data = nullptr;
         m_dims = std::array<std::size_t, Rank>{};
         m_size = 0;
@@ -61,7 +67,7 @@ class Tensor {
     }
 
     /// Constructs an arbitrary-dimensional tensor.
-    constexpr Tensor(std::initializer_list<Tensor<Rank, T>> t_list) noexcept {
+    constexpr tensor(std::initializer_list<tensor<Rank, T>> t_list) noexcept {
         if (t_list.size() == 0) {
             m_data = nullptr;
             m_dims = std::array<std::size_t, Rank>{};
@@ -71,11 +77,11 @@ class Tensor {
         }
 
         std::size_t size = 0;
-        for (const Tensor<Rank, T>& t : t_list) {
+        for (const tensor<Rank, T>& t : t_list) {
             if (size == 0) {
                 m_dims[0] = t_list.size();
                 auto t_dims = t.dims();
-                std::copy(t.m_dims.begin(), t.m_dims.begin() + Rank, m_dims.begin() + 1);
+                std::copy(t_dims.begin(), t_dims.begin() + Rank, m_dims.begin() + 1);
             }
             size += t.size();
         }
@@ -83,7 +89,7 @@ class Tensor {
         m_size = size;
 
         std::size_t acc_idx = 0;
-        for (const Tensor<Rank, T>& t : t_list) {
+        for (const tensor<Rank, T>& t : t_list) {
             for (std::size_t idx = 0; idx < t.size(); ++idx) {
                 m_data[acc_idx++] = t.m_data[idx];
             }
@@ -97,7 +103,7 @@ class Tensor {
     }
 
     /// Constructs a tensor with the provided dimensions.
-    constexpr Tensor(const std::array<std::size_t, Rank> dims) noexcept {
+    constexpr tensor(const std::array<std::size_t, Rank> dims) noexcept {
         m_dims = dims;
         m_size = std::accumulate(begin(dims), end(dims), 1, std::multiplies<std::size_t>());
         m_data = new T[m_size]{};
@@ -110,7 +116,7 @@ class Tensor {
     }
 
     /// Defines a copy constructor.
-    constexpr Tensor(const Tensor& rhs) noexcept {
+    constexpr tensor(const tensor& rhs) noexcept {
         m_data = new T[rhs.m_size]{};
         m_dims = rhs.m_dims;
         m_size = rhs.m_size;
@@ -119,13 +125,13 @@ class Tensor {
     }
 
     /// Defines a move constructor.
-    constexpr Tensor(Tensor&& rhs) noexcept
+    constexpr tensor(tensor&& rhs) noexcept
         : m_data(rhs.m_data), m_dims(rhs.m_dims), m_size(rhs.m_size), m_strides(rhs.m_strides) {
         rhs.m_data = nullptr;
     }
 
     /// Frees the memory and points the dangling pointer to `nullptr`.
-    ~Tensor() noexcept {
+    ~tensor() noexcept {
         delete[] m_data;
         m_data = nullptr;
     }
@@ -135,7 +141,7 @@ class Tensor {
     // Convenience {{{
 
     /// Helps priting a tensor.
-    consteval const T* __print(const T* data, const std::size_t* dims, const std::size_t rank) {
+    constexpr const T* __print(const T* data, const std::size_t* dims, const std::size_t rank) {
         const char* p_sep = "";
         std::cout << '{';
         if (rank > 1) {
@@ -155,8 +161,8 @@ class Tensor {
     }
 
     /// Prints the tensor.
-    consteval void print() {
-        auto _ = __print(m_data, m_dims.data(), Rank);
+    constexpr void print() {
+        (void)__print(m_data, m_dims.data(), Rank);
         std::cout << '\n';
     }
 
@@ -200,7 +206,7 @@ class Tensor {
     // Basic arithmetic operators {{{
 
     /// Adds the tensor to the other tensor.
-    [[nodiscard]] constexpr auto operator+(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator+(const tensor& other) const {
         auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
             tensor[idx] += other[idx];
@@ -209,7 +215,7 @@ class Tensor {
     }
 
     /// Subtracts the tensor from the other tensor.
-    [[nodiscard]] constexpr auto operator-(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator-(const tensor& other) const {
         auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
             tensor[idx] -= other[idx];
@@ -218,7 +224,7 @@ class Tensor {
     }
 
     /// Multiplies the tensor by the other tensor.
-    [[nodiscard]] constexpr auto operator*(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator*(const tensor& other) const {
         auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
             tensor[idx] *= other[idx];
@@ -227,7 +233,7 @@ class Tensor {
     }
 
     /// Divides the tensor by the other tensor.
-    [[nodiscard]] constexpr auto operator/(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator/(const tensor& other) const {
         auto tensor = *this;
         for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
             if (other[idx] == 0) {
@@ -290,7 +296,7 @@ class Tensor {
     // Comparsion operators {{{
 
     /// Returns true if the tensor is equal to the other tensor, false otherwise.
-    [[nodiscard]] constexpr auto operator==(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator==(const tensor& other) const {
         if (m_size != other.size()) {
             return false;
         }
@@ -306,7 +312,7 @@ class Tensor {
     }
 
     /// Returns true if the tensor is not equal to the other tensor, false otherwise.
-    [[nodiscard]] constexpr auto operator!=(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator!=(const tensor& other) const {
         if (m_size != other.size()) {
             return true;
         }
@@ -322,7 +328,7 @@ class Tensor {
     }
 
     /// Returns true if the tensor is greater than the other tensor in all element-wise comparisons.
-    [[nodiscard]] constexpr auto operator>(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator>(const tensor& other) const {
         if (m_size != other.size()) {
             throw std::runtime_error("Tensor size mismatch.");
         }
@@ -339,7 +345,7 @@ class Tensor {
 
     /// Returns true if the tensor is greater than or equal the other tensor in all element-wise
     /// comparisons.
-    [[nodiscard]] constexpr auto operator>=(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator>=(const tensor& other) const {
         if (m_size != other.size()) {
             throw std::runtime_error("Tensor size mismatch.");
         }
@@ -352,7 +358,7 @@ class Tensor {
     }
 
     /// Returns true if the tensor is less than the other tensor in all element-wise comparisons.
-    [[nodiscard]] constexpr auto operator<(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator<(const tensor& other) const {
         if (m_size != other.size()) {
             throw std::runtime_error("Tensor size mismatch.");
         }
@@ -369,7 +375,7 @@ class Tensor {
 
     /// Returns true if the tensor is less than or equal the other tensor in all element-wise
     /// comparisons.
-    [[nodiscard]] constexpr auto operator<=(const Tensor& other) const {
+    [[nodiscard]] constexpr auto operator<=(const tensor& other) const {
         if (m_size != other.size()) {
             throw std::runtime_error("Tensor size mismatch.");
         }
@@ -439,12 +445,14 @@ class Tensor {
 
 // }}}
 
+// builder {{{
+
 namespace builder {
 
 /// Constructs a tensor of zeros with the provided dimensions.
 template <std::size_t Rank, Arithmetic T>
 [[nodiscard]] constexpr auto zeros(std::array<std::size_t, Rank> dims) {
-    auto tensor = Tensor<Rank, T>(dims);
+    auto tensor = ::core::tensor<Rank, T>(dims);
     for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
         tensor[idx] = static_cast<T>(0);
     }
@@ -454,7 +462,7 @@ template <std::size_t Rank, Arithmetic T>
 /// Constructs a tensor of ones with the provided dimensions.
 template <std::size_t Rank, Arithmetic T>
 [[nodiscard]] constexpr auto ones(std::array<std::size_t, Rank> dims) {
-    auto tensor = Tensor<Rank, T>(dims);
+    auto tensor = ::core::tensor<Rank, T>(dims);
     for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
         tensor[idx] = static_cast<T>(1);
     }
@@ -464,7 +472,7 @@ template <std::size_t Rank, Arithmetic T>
 /// Constructs a tensor of `x`s with the provided dimensions.
 template <std::size_t Rank, Arithmetic T>
 [[nodiscard]] constexpr auto xs(std::array<std::size_t, Rank> dims, const T x) {
-    auto tensor = Tensor<Rank, T>();
+    auto tensor = ::core::tensor<Rank, T>(dims);
     for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
         tensor[idx] = static_cast<T>(x);
     }
@@ -473,8 +481,8 @@ template <std::size_t Rank, Arithmetic T>
 
 /// Constructs a tensor of zeros with the shape that matches that of the provided tensor.
 template <std::size_t Rank, Arithmetic T>
-[[nodiscard]] constexpr auto zeros_like(const Tensor<Rank, T>& t) {
-    auto tensor = Tensor<Rank, T>(t.dims());
+[[nodiscard]] constexpr auto zeros_like(const tensor<Rank, T>& t) {
+    auto tensor = ::core::tensor<Rank, T>(t.dims());
     for (std::size_t idx = 0; idx < t.size(); ++idx) {
         tensor[idx] = static_cast<T>(0);
     }
@@ -483,8 +491,8 @@ template <std::size_t Rank, Arithmetic T>
 
 /// Constructs a tensor of ones with the shape that matches that of the provided tensor.
 template <std::size_t Rank, Arithmetic T>
-[[nodiscard]] constexpr auto ones_like(const Tensor<Rank, T>& t) {
-    auto tensor = Tensor<Rank, T>(t.dims());
+[[nodiscard]] constexpr auto ones_like(const tensor<Rank, T>& t) {
+    auto tensor = ::core::tensor<Rank, T>(t.dims());
     for (std::size_t idx = 0; idx < t.size(); ++idx) {
         tensor[idx] = static_cast<T>(1);
     }
@@ -493,8 +501,8 @@ template <std::size_t Rank, Arithmetic T>
 
 /// Constructs a tensor of `x`s with the shape that matches that of the provided tensor.
 template <std::size_t Rank, Arithmetic T>
-[[nodiscard]] constexpr auto xs_like(const Tensor<Rank, T>& t, const T x) {
-    auto tensor = Tensor(t.dims());
+[[nodiscard]] constexpr auto xs_like(const tensor<Rank, T>& t, const T x) {
+    auto tensor = ::core::tensor(t.dims());
     for (std::size_t idx = 0; idx < t.size(); ++idx) {
         tensor[idx] = static_cast<T>(x);
     }
@@ -505,7 +513,7 @@ template <std::size_t Rank, Arithmetic T>
 template <Arithmetic T>
 [[nodiscard]] constexpr auto range1d(const T begin, const T end, const T stride) {
     auto dims = std::array<std::size_t, 1>{static_cast<std::size_t>((end - begin) / stride)};
-    auto tensor = Tensor<1, T>(dims);
+    auto tensor = ::core::tensor<1, T>(dims);
     std::size_t idx = 0;
     for (T val = begin; val < end; val += stride) {
         tensor[idx++] = val;
@@ -515,6 +523,10 @@ template <Arithmetic T>
 
 }  // namespace builder
 
-}  // namespace tensor
+// }}}
+
+}  // namespace core
+
+// }}}
 
 #endif  // BF_H
