@@ -3,7 +3,7 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-// include {{{
+// `#include` directives {{{
 
 #include <array>
 #include <cmath>
@@ -14,8 +14,6 @@
 #include <stdexcept>
 
 // }}}
-
-// core {{{
 
 namespace core {
 
@@ -80,8 +78,7 @@ class tensor {
         for (const tensor<Rank, T>& t : t_list) {
             if (size == 0) {
                 m_dims[0] = t_list.size();
-                auto t_dims = t.dims();
-                std::copy(t_dims.begin(), t_dims.begin() + Rank, m_dims.begin() + 1);
+                std::copy(t.m_dims.begin(), t.m_dims.begin() + Rank, m_dims.begin() + 1);
             }
             size += t.size();
         }
@@ -118,10 +115,24 @@ class tensor {
     /// Defines a copy constructor.
     constexpr tensor(const tensor& rhs) noexcept {
         m_data = new T[rhs.m_size]{};
+        std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
+
         m_dims = rhs.m_dims;
         m_size = rhs.m_size;
         m_strides = rhs.m_strides;
-        std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
+    }
+
+    /// Overloads the copy assignment operator.
+    constexpr auto& operator=(const tensor& rhs) noexcept {
+        if (this != &rhs) {
+            m_data = new T[rhs.m_size]{};
+            std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
+
+            m_dims = rhs.m_dims;
+            m_size = rhs.m_size;
+            m_strides = rhs.m_strides;
+        }
+        return *this;
     }
 
     /// Defines a move constructor.
@@ -130,8 +141,21 @@ class tensor {
         rhs.m_data = nullptr;
     }
 
+    /// Overloads the move assignment operator.
+    constexpr auto& operator=(const tensor&& rhs) noexcept {
+        if (this != &rhs) {
+            m_data = rhs.m_data;
+            m_dims = rhs.m_dims;
+            m_size = rhs.m_size;
+            m_strides = rhs.m_strides;
+
+            rhs.m_data = nullptr;
+        }
+        return *this;
+    }
+
     /// Frees the memory and points the dangling pointer to `nullptr`.
-    ~tensor() noexcept {
+    constexpr ~tensor() noexcept {
         delete[] m_data;
         m_data = nullptr;
     }
@@ -168,7 +192,7 @@ class tensor {
 
     /// Prints a flat representation of the tensor.
     constexpr auto flat_print() const {
-        std::cout << "flat_data { ";
+        std::cout << '{' << ' ';
         for (std::size_t idx = 0; idx < m_size; ++idx) {
             std::cout << m_data[idx] << ' ';
         }
@@ -522,8 +546,6 @@ template <Arithmetic T>
 }
 
 }  // namespace builder
-
-// }}}
 
 }  // namespace core
 

@@ -1,6 +1,19 @@
 # tensor
 
-Efficient tensors in C++.
+A tensor library.
+
+## API
+
+```cpp
+#include "tensor.hpp"
+
+using namespace core;
+
+int main() {
+    tensor<2, float> t = {{0, 1}, {2, 3}, {4, 5}};
+    t.square().print();
+}
+```
 
 ## Testing
 
