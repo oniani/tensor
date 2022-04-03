@@ -7,10 +7,10 @@ A tensor library.
 ```cpp
 #include "tensor.hpp"
 
-using namespace core;
+using namespace type;
 
 int main() {
-    tensor<2, float> t = {{0, 1}, {2, 3}, {4, 5}};
+    tensor2d<float> t = {{0, 1}, {2, 3}, {4, 5}};
     t.square().print();
 }
 ```
