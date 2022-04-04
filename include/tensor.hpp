@@ -209,10 +209,34 @@ namespace core {
         [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
         /// Gets the value by specified indices.
-        [[nodiscard]] constexpr auto get(const std::array<std::size_t, Rank> dims) const {
+        template <std::size_t U>
+        [[nodiscard]] constexpr auto get(const std::array<std::size_t, U> idxs) const {
+            std::size_t flat_idx = 0;
+            for (std::size_t idx = 0; idx < U; idx++) {
+                flat_idx += idxs[idx] * m_strides[idx];
+            }
+
+            std::array<std::size_t, Rank - U> dims;
+            std::copy(m_dims.begin() + U, m_dims.end(), dims.begin());
+
+            std::size_t offset = 1;
+            for (std::size_t idx = idxs.size(); idx < m_dims.size(); ++idx) {
+                offset *= m_dims[idx];
+            }
+
+            auto result = tensor<Rank - U, T>(dims);
+            for (std::size_t idx = flat_idx; idx < flat_idx + offset; ++idx) {
+                result[idx - flat_idx] = m_data[idx];
+            }
+
+            return result;
+        }
+
+        /// Gets the value by specified indices.
+        [[nodiscard]] constexpr auto flat_get(const std::array<std::size_t, Rank> idxs) const {
             std::size_t flat_idx = 0;
             for (std::size_t idx = 0; idx < Rank; ++idx) {
-                flat_idx += dims[idx] * m_strides[idx];
+                flat_idx += idxs[idx] * m_strides[idx];
             }
             return m_data[flat_idx];
         }
