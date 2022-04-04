@@ -22,17 +22,17 @@ TEST_CASE("Tensor 1D - Core utilities", "[1D][arithmetic][data][dims][size][get]
     REQUIRE(t1.size() == 5);
     REQUIRE(t2.size() == 5);
 
-    REQUIRE(t1.flat_get({0}) == 0);
-    REQUIRE(t1.flat_get({1}) == 1);
-    REQUIRE(t1.flat_get({2}) == 2);
-    REQUIRE(t1.flat_get({3}) == 3);
-    REQUIRE(t1.flat_get({4}) == 4);
+    REQUIRE(t1.get<1>({0}) == tensor<1, float>{0});
+    REQUIRE(t1.get<1>({1}) == tensor<1, float>{1});
+    REQUIRE(t1.get<1>({2}) == tensor<1, float>{2});
+    REQUIRE(t1.get<1>({3}) == tensor<1, float>{3});
+    REQUIRE(t1.get<1>({4}) == tensor<1, float>{4});
 
-    REQUIRE(t2.flat_get({0}) == 5);
-    REQUIRE(t2.flat_get({1}) == 6);
-    REQUIRE(t2.flat_get({2}) == 7);
-    REQUIRE(t2.flat_get({3}) == 8);
-    REQUIRE(t2.flat_get({4}) == 9);
+    REQUIRE(t2.get<1>({0}) == tensor<1, float>{5});
+    REQUIRE(t2.get<1>({1}) == tensor<1, float>{6});
+    REQUIRE(t2.get<1>({2}) == tensor<1, float>{7});
+    REQUIRE(t2.get<1>({3}) == tensor<1, float>{8});
+    REQUIRE(t2.get<1>({4}) == tensor<1, float>{9});
 }
 
 TEST_CASE("Tensor 1D - Basic arithmetic operators", "[1D][add][sub][mul][div]") {
@@ -40,32 +40,37 @@ TEST_CASE("Tensor 1D - Basic arithmetic operators", "[1D][add][sub][mul][div]") 
     tensor<1, float> t2 = {5, 6, 7, 8, 9};
 
     const auto t3 = t1 + t2;
-    REQUIRE(t3.flat_get({0}) == 5);
-    REQUIRE(t3.flat_get({1}) == 7);
-    REQUIRE(t3.flat_get({2}) == 9);
-    REQUIRE(t3.flat_get({3}) == 11);
-    REQUIRE(t3.flat_get({4}) == 13);
+    REQUIRE(t3.get<1>({0}) == tensor<1, float>{5});
+    REQUIRE(t3.get<1>({1}) == tensor<1, float>{7});
+    REQUIRE(t3.get<1>({2}) == tensor<1, float>{9});
+    REQUIRE(t3.get<1>({3}) == tensor<1, float>{11});
+    REQUIRE(t3.get<1>({4}) == tensor<1, float>{13});
 
     const auto t4 = t1 - t2;
-    REQUIRE(t4.flat_get({0}) == -5);
-    REQUIRE(t4.flat_get({1}) == -5);
-    REQUIRE(t4.flat_get({2}) == -5);
-    REQUIRE(t4.flat_get({3}) == -5);
-    REQUIRE(t4.flat_get({4}) == -5);
+    REQUIRE(t4.get<1>({0}) == tensor<1, float>{-5});
+    REQUIRE(t4.get<1>({1}) == tensor<1, float>{-5});
+    REQUIRE(t4.get<1>({2}) == tensor<1, float>{-5});
+    REQUIRE(t4.get<1>({3}) == tensor<1, float>{-5});
+    REQUIRE(t4.get<1>({4}) == tensor<1, float>{-5});
 
     const auto t5 = t1 * t2;
-    REQUIRE(t5.flat_get({0}) == 0);
-    REQUIRE(t5.flat_get({1}) == 6);
-    REQUIRE(t5.flat_get({2}) == 14);
-    REQUIRE(t5.flat_get({3}) == 24);
-    REQUIRE(t5.flat_get({4}) == 36);
+    REQUIRE(t5.get<1>({0}) == tensor<1, float>{0});
+    REQUIRE(t5.get<1>({1}) == tensor<1, float>{6});
+    REQUIRE(t5.get<1>({2}) == tensor<1, float>{14});
+    REQUIRE(t5.get<1>({3}) == tensor<1, float>{24});
+    REQUIRE(t5.get<1>({4}) == tensor<1, float>{36});
 
     const auto t6 = t1 / t2;
-    REQUIRE(round(t6.flat_get({0}) * 10e5) / 10e5 == round(0.0 / 5 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({1}) * 10e5) / 10e5 == round(1.0 / 6 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({2}) * 10e5) / 10e5 == round(2.0 / 7 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({3}) * 10e5) / 10e5 == round(3.0 / 8 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({4}) * 10e5) / 10e5 == round(4.0 / 9 * 10e5) / 10e5);
+    REQUIRE((t6.get<1>({0}) * 10e5).round() / 10e5 ==
+            tensor<1, float>{0.0 / 5 * 10e5}.round() / 10e5);
+    REQUIRE((t6.get<1>({1}) * 10e5).round() / 10e5 ==
+            tensor<1, float>{1.0 / 6 * 10e5}.round() / 10e5);
+    REQUIRE((t6.get<1>({2}) * 10e5).round() / 10e5 ==
+            tensor<1, float>{2.0 / 7 * 10e5}.round() / 10e5);
+    REQUIRE((t6.get<1>({3}) * 10e5).round() / 10e5 ==
+            tensor<1, float>{3.0 / 8 * 10e5}.round() / 10e5);
+    REQUIRE((t6.get<1>({4}) * 10e5).round() / 10e5 ==
+            tensor<1, float>{4.0 / 9 * 10e5}.round() / 10e5);
 }
 
 TEST_CASE("Tensor 1D - Basic arithmetic broadcasting", "[1D][add][sub][mul][div]") {
@@ -136,55 +141,4 @@ TEST_CASE("Tensor 1D - Handy broadcasting operations", "[1D][pow][square][sqrt][
             tensor<1, float>{1.0, 0.5403023058f, -0.416146836f, -0.989992496f, -0.653643620f});
     REQUIRE(t2.cos() == tensor<1, float>{0.2836621854f, 0.9601702866f, 0.7539022543f, -0.145500033f,
                                          -0.911130261f});
-}
-
-TEST_CASE("Tensor 2D - basic arithmetic", "[2D][arithmetic][get]") {
-    const auto t1 = tensor<2, float>{{0, 1}, {2, 3}, {4, 5}};
-    const auto t2 = tensor<2, float>{{5, 6}, {7, 8}, {8, 9}};
-
-    REQUIRE(t1.flat_get({0, 0}) == 0);
-    REQUIRE(t1.flat_get({0, 1}) == 1);
-    REQUIRE(t1.flat_get({1, 0}) == 2);
-    REQUIRE(t1.flat_get({1, 1}) == 3);
-    REQUIRE(t1.flat_get({2, 0}) == 4);
-    REQUIRE(t1.flat_get({2, 1}) == 5);
-
-    REQUIRE(t2.flat_get({0, 0}) == 5);
-    REQUIRE(t2.flat_get({0, 1}) == 6);
-    REQUIRE(t2.flat_get({1, 0}) == 7);
-    REQUIRE(t2.flat_get({1, 1}) == 8);
-    REQUIRE(t2.flat_get({2, 0}) == 8);
-    REQUIRE(t2.flat_get({2, 1}) == 9);
-
-    const auto t3 = t1 + t2;
-    REQUIRE(t3.flat_get({0, 0}) == 5);
-    REQUIRE(t3.flat_get({0, 1}) == 7);
-    REQUIRE(t3.flat_get({1, 0}) == 9);
-    REQUIRE(t3.flat_get({1, 1}) == 11);
-    REQUIRE(t3.flat_get({2, 0}) == 12);
-    REQUIRE(t3.flat_get({2, 1}) == 14);
-
-    const auto t4 = t1 - t2;
-    REQUIRE(t4.flat_get({0, 0}) == -5);
-    REQUIRE(t4.flat_get({0, 1}) == -5);
-    REQUIRE(t4.flat_get({1, 0}) == -5);
-    REQUIRE(t4.flat_get({1, 1}) == -5);
-    REQUIRE(t4.flat_get({2, 0}) == -4);
-    REQUIRE(t4.flat_get({2, 1}) == -4);
-
-    const auto t5 = t1 * t2;
-    REQUIRE(t5.flat_get({0, 0}) == 0);
-    REQUIRE(t5.flat_get({0, 1}) == 6);
-    REQUIRE(t5.flat_get({1, 0}) == 14);
-    REQUIRE(t5.flat_get({1, 1}) == 24);
-    REQUIRE(t5.flat_get({2, 0}) == 32);
-    REQUIRE(t5.flat_get({2, 1}) == 45);
-
-    const auto t6 = t1 / t2;
-    REQUIRE(round(t6.flat_get({0, 0}) * 10e5) / 10e5 == round(0.0 / 5 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({0, 1}) * 10e5) / 10e5 == round(1.0 / 6 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({1, 0}) * 10e5) / 10e5 == round(2.0 / 7 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({1, 1}) * 10e5) / 10e5 == round(3.0 / 8 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({2, 0}) * 10e5) / 10e5 == round(4.0 / 8 * 10e5) / 10e5);
-    REQUIRE(round(t6.flat_get({2, 1}) * 10e5) / 10e5 == round(5.0 / 9 * 10e5) / 10e5);
 }

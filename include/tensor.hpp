@@ -162,6 +162,51 @@ namespace core {
 
         // }}}
 
+        // Core utilities {{{
+
+        /// Getter methods for member variables.
+        [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
+        [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
+        [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
+
+        /// Gets the value by specified indices.
+        template <std::size_t U>
+        [[nodiscard]] constexpr auto get(const std::array<std::size_t, U> idxs) const {
+            std::size_t flat_idx = 0;
+            for (std::size_t idx = 0; idx < U; idx++) {
+                flat_idx += idxs[idx] * m_strides[idx];
+            }
+
+            if constexpr (Rank == U) {
+                return tensor<1, T>{m_data[flat_idx]};
+            }
+
+            if constexpr (Rank != U) {
+                std::array<std::size_t, Rank - U> dims;
+                std::copy(m_dims.begin() + U, m_dims.end(), dims.begin());
+
+                auto offset = std::reduce(m_dims.begin() + idxs.size(), m_dims.end(), 1,
+                                          std::multiplies<int>());
+
+                auto result = tensor<Rank - U, T>(dims);
+                for (std::size_t idx = flat_idx; idx < flat_idx + offset; ++idx) {
+                    result[idx - flat_idx] = m_data[idx];
+                }
+
+                return result;
+            }
+        }
+
+        /// Operator for getting data.
+        [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
+            if (idx < 0 or idx > m_size - 1) {
+                throw std::out_of_range("Index out of bounds.");
+            }
+            return m_data[idx];
+        }
+
+        // }}}
+
         // Convenience {{{
 
         /// Helps priting a tensor.
@@ -197,56 +242,6 @@ namespace core {
                 std::cout << m_data[idx] << ' ';
             }
             std::cout << '}' << std::endl;
-        }
-
-        // }}}
-
-        // Core utilities {{{
-
-        /// Getter methods for member variables.
-        [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
-        [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
-        [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
-
-        /// Gets the value by specified indices.
-        template <std::size_t U>
-        [[nodiscard]] constexpr auto get(const std::array<std::size_t, U> idxs) const {
-            std::size_t flat_idx = 0;
-            for (std::size_t idx = 0; idx < U; idx++) {
-                flat_idx += idxs[idx] * m_strides[idx];
-            }
-
-            std::array<std::size_t, Rank - U> dims;
-            std::copy(m_dims.begin() + U, m_dims.end(), dims.begin());
-
-            std::size_t offset = 1;
-            for (std::size_t idx = idxs.size(); idx < m_dims.size(); ++idx) {
-                offset *= m_dims[idx];
-            }
-
-            auto result = tensor<Rank - U, T>(dims);
-            for (std::size_t idx = flat_idx; idx < flat_idx + offset; ++idx) {
-                result[idx - flat_idx] = m_data[idx];
-            }
-
-            return result;
-        }
-
-        /// Gets the value by specified indices.
-        [[nodiscard]] constexpr auto flat_get(const std::array<std::size_t, Rank> idxs) const {
-            std::size_t flat_idx = 0;
-            for (std::size_t idx = 0; idx < Rank; ++idx) {
-                flat_idx += idxs[idx] * m_strides[idx];
-            }
-            return m_data[flat_idx];
-        }
-
-        /// Operator for getting data.
-        [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
-            if (idx < 0 or idx > m_size - 1) {
-                throw std::out_of_range("Index out of bounds.");
-            }
-            return m_data[idx];
         }
 
         // }}}
@@ -486,6 +481,15 @@ namespace core {
             auto tensor = *this;
             for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
                 tensor[idx] = std::cos(tensor[idx]);
+            }
+            return tensor;
+        }
+
+        /// Broadcasts the round operation.
+        [[nodiscard]] constexpr auto round() const {
+            auto tensor = *this;
+            for (std::size_t idx = 0; idx < tensor.size(); ++idx) {
+                tensor[idx] = std::round(tensor[idx]);
             }
             return tensor;
         }
