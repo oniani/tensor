@@ -1,6 +1,6 @@
 # tensor
 
-A tensor library.
+A fast, zero-dependency tensor library in C++.
 
 ## API
 
@@ -20,7 +20,7 @@ int main() {
 ```console
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_CXX_COMPILER=clang++ .. && cmake --build . --config Release -- -j 4 && ./test/tests
+$ cmake -DCMAKE_CXX_COMPILER=clang++ .. && cmake --build . && ./test/tests
 ```
 
 ## References
