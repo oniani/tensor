@@ -1,4 +1,26 @@
-/// A zero-dependency tensor implementation based on C++ STL.
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 David Oniani
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #ifndef CORE_H
 #define CORE_H
@@ -39,24 +61,15 @@ class tensor {
   /**
    * Constructs an empty tensor.
    */
-  constexpr tensor() noexcept {
-    m_data = nullptr;
-    m_dims = std::array<std::size_t, Order>{};
-    m_size = 0;
-    m_strides = std::array<std::size_t, Order>{};
-  }
+  constexpr tensor() : m_data{nullptr}, m_dims{}, m_size{0}, m_strides{} {}
 
   /**
    * Constructs a one-dimensional tensor.
    *
    * @param values An initializer list holding values of the one-dimensional tensor.
    */
-  constexpr tensor(std::initializer_list<T> values) noexcept {
+  constexpr tensor(std::initializer_list<T> values) {
     if (values.size() == 0) {
-      m_data = nullptr;
-      m_dims = std::array<std::size_t, Order>{};
-      m_size = 0;
-      m_strides = std::array<std::size_t, Order>{};
       return;
     }
 
@@ -75,7 +88,7 @@ class tensor {
    *
    * @param t_list An initializer list holding tensors.
    */
-  constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) noexcept {
+  constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) {
     if (t_list.size() == 0) {
       m_data = nullptr;
       m_dims = std::array<std::size_t, Order>{};
@@ -114,7 +127,7 @@ class tensor {
    *
    * @param dims Dimensions for constructing a tensor.
    */
-  constexpr tensor(const std::array<std::size_t, Order> dims) noexcept {
+  constexpr tensor(const std::array<std::size_t, Order> dims) {
     m_dims = dims;
     m_size = std::reduce(dims.begin(), dims.end(), 1, std::multiplies<std::size_t>());
     m_data = new T[m_size];
@@ -131,7 +144,7 @@ class tensor {
    *
    * @param rhs A right-hand side of the assignment.
    */
-  constexpr tensor(const tensor &rhs) noexcept {
+  constexpr tensor(const tensor &rhs) {
     m_data = new T[rhs.m_size];
     std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
 
@@ -145,7 +158,7 @@ class tensor {
    *
    * @param rhs A right-hand side of the assignment.
    */
-  constexpr auto &operator=(const tensor &rhs) noexcept {
+  constexpr auto &operator=(const tensor &rhs) {
     if (this != &rhs) {
       m_data = new T[rhs.m_size];
       std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
@@ -190,7 +203,7 @@ class tensor {
    *
    * @param rhs A right-hand side of the assignment.
    */
-  constexpr ~tensor() noexcept {
+  constexpr ~tensor() {
     delete[] m_data;
     m_data = nullptr;
   }
@@ -206,7 +219,7 @@ class tensor {
    * @throws `std::out_of_range`
    */
   [[nodiscard]] constexpr auto &operator[](const std::size_t idx) const {
-    if (idx < 0 || idx > m_size - 1) {
+    if (idx > m_size - 1) {
       throw std::out_of_range("Index out of bounds.");
     }
     return m_data[idx];
@@ -253,7 +266,7 @@ class tensor {
 
   // }}}
 
-  // Convenience {{{
+  // Printing {{{
 
   /**
    * A helper method for printing a tensor.

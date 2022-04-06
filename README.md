@@ -5,13 +5,13 @@ A fast, zero-dependency tensor library in C++.
 ## API
 
 ```cpp
-#include "tensor.hpp"
+#include "include/tensor.hpp"
 
 using namespace type;
 
 int main() {
-    tensor2d<float> t = {{0, 1}, {2, 3}, {4, 5}};
-    t.square().print();
+  tensor2<float> t{{0, 1}, {2, 3}, {4, 5}};
+  t.square().print();
 }
 ```
 
