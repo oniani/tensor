@@ -70,18 +70,12 @@ namespace core {
      * @param values An initializer list holding values of the order one tensor.
      */
     constexpr tensor(std::initializer_list<T> values) {
-      if (values.size() == 0) {
-        return;
-      }
+      m_size = values.size();
+      m_dims = {m_size};
+      m_strides = {1};
 
-      std::size_t size = values.size();
-
-      m_data = new T[size];
+      m_data = new T[m_size];
       std::copy(values.begin(), values.end(), m_data);
-
-      m_dims[0] = size;
-      m_size = size;
-      m_strides[0] = 1;
     }
 
     /**
@@ -90,19 +84,15 @@ namespace core {
      * @param t_list An initializer list holding tensors.
      */
     constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) {
-      if (t_list.size() == 0) {
-        m_data = nullptr;
-        m_dims = std::array<std::size_t, Order>{};
-        m_size = 0;
-        m_strides = std::array<std::size_t, Order>{};
-        return;
-      }
-
-      std::size_t size = 0;
+      std::size_t size{0};
+      std::size_t check_size{0};
       for (const tensor<T, Order>& t : t_list) {
         if (size == 0) {
           m_dims[0] = t_list.size();
           std::copy(t.m_dims.begin(), t.m_dims.begin() + Order, m_dims.begin() + 1);
+          check_size = t.size();
+        } else if (check_size != t.size()) {
+          throw std::runtime_error("Tensor dimension mismatch.");
         }
         size += t.size();
       }

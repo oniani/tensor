@@ -75,7 +75,7 @@ namespace builder {
   [[nodiscard]] constexpr auto xs(const std::array<std::size_t, Order>& dims, const T x) {
     auto result = core::tensor<T, Order>(dims);
     for (std::size_t idx = 0; idx < result.size(); ++idx) {
-      result[idx] = static_cast<T>(x);
+      result[idx] = x;
     }
     return result;
   }
@@ -126,7 +126,7 @@ namespace builder {
   [[nodiscard]] constexpr auto xs_like(const core::tensor<T, Order>& t, const T x) {
     auto result = core::tensor(t.dims());
     for (std::size_t idx = 0; idx < t.size(); ++idx) {
-      result[idx] = static_cast<T>(x);
+      result[idx] = x;
     }
     return result;
   }
