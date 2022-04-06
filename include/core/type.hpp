@@ -3,67 +3,67 @@
 namespace type {
 
 /**
- * Constructs a type representing a one-dimensional tensor.
+ * Constructs a type representing an order one tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor1d = core::tensor<1, T>;
+using tensor1 = core::tensor<T, 1>;
 
 /**
- * Constructs a type representing a two-dimensional tensor.
+ * Constructs a type representing an order two tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor2d = core::tensor<2, T>;
+using tensor2 = core::tensor<T, 2>;
 
 /**
- * Constructs a type representing a three-dimensional tensor.
+ * Constructs a type representing an order three tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor3d = core::tensor<3, T>;
+using tensor3 = core::tensor<T, 3>;
 
 /**
- * Constructs a type representing a four-dimensional tensor.
+ * Constructs a type representing an order four tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor4d = core::tensor<4, T>;
+using tensor4 = core::tensor<T, 4>;
 
 /**
- * Constructs a type representing a five-dimensional tensor.
+ * Constructs a type representing an order five tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor5d = core::tensor<5, T>;
+using tensor5 = core::tensor<T, 5>;
 
 /**
- * Constructs a type representing a six-dimensional tensor.
+ * Constructs a type representing an order six tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor6d = core::tensor<6, T>;
+using tensor6 = core::tensor<T, 6>;
 
 /**
- * Constructs a type representing a seven-dimensional tensor.
+ * Constructs a type representing an order seven tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor7d = core::tensor<7, T>;
+using tensor7 = core::tensor<T, 7>;
 
 /**
- * Constructs a type representing an eight-dimensional tensor.
+ * Constructs a type representing an order eight tensor.
  *
  * @tparam T An arithmetic type representing the type of every element in the returned tensor.
  */
 template <Arithmetic T>
-using tensor8d = core::tensor<8, T>;
+using tensor8 = core::tensor<T, 8>;
 
 }  // namespace type

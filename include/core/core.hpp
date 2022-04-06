@@ -22,9 +22,9 @@ namespace core {
  * @tparam T An arithmetic type representing the type of each element in tensor.
  * @tparam Order The NTTP representing the order of a tensor.
  */
-template <std::size_t Order, Arithmetic T>
+template <Arithmetic T, std::size_t Order>
 class tensor {
-  // Prefer "order" to "rank," as its unambiguous, and order 0 tensors exits (they're scalars!)
+  // NOTE: Prefer "order" to "rank," as its unambiguous and order 0 tensors exist (they're scalars!)
   static_assert(Order >= 0, "Order must be a non-negative integer.");
 
  private:
@@ -75,7 +75,7 @@ class tensor {
    *
    * @param t_list An initializer list holding tensors.
    */
-  constexpr tensor(std::initializer_list<tensor<Order, T> > t_list) noexcept {
+  constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) noexcept {
     if (t_list.size() == 0) {
       m_data = nullptr;
       m_dims = std::array<std::size_t, Order>{};
@@ -85,7 +85,7 @@ class tensor {
     }
 
     std::size_t size = 0;
-    for (const tensor<Order, T> &t : t_list) {
+    for (const tensor<T, Order> &t : t_list) {
       if (size == 0) {
         m_dims[0] = t_list.size();
         std::copy(t.m_dims.begin(), t.m_dims.begin() + Order, m_dims.begin() + 1);
@@ -96,7 +96,7 @@ class tensor {
     m_size = size;
 
     std::size_t acc_idx = 0;
-    for (const tensor<Order, T> &t : t_list) {
+    for (const tensor<T, Order> &t : t_list) {
       for (std::size_t idx = 0; idx < t.size(); ++idx) {
         m_data[acc_idx++] = t.m_data[idx];
       }
@@ -227,12 +227,12 @@ class tensor {
   template <std::size_t U>
   [[nodiscard]] constexpr auto get(const std::array<std::size_t, U> idxs) const {
     std::size_t flat_idx = 0;
-    for (std::size_t idx = 0; idx < U; idx++) {
+    for (std::size_t idx = 0; idx < U; ++idx) {
       flat_idx += idxs[idx] * m_strides[idx];
     }
 
     if constexpr (Order == U) {
-      return tensor<1, T>{m_data[flat_idx]};
+      return m_data[flat_idx];
     }
 
     if constexpr (Order != U) {
@@ -242,7 +242,7 @@ class tensor {
       auto offset =
           std::reduce(m_dims.begin() + idxs.size(), m_dims.end(), 1, std::multiplies<int>());
 
-      auto result = tensor<Order - U, T>(dims);
+      auto result = tensor<T, Order - U>(dims);
       for (std::size_t idx = flat_idx; idx < flat_idx + offset; ++idx) {
         result[idx - flat_idx] = m_data[idx];
       }
@@ -285,8 +285,22 @@ class tensor {
    * Prints the tensor via helper method.
    */
   constexpr void print() {
+    std::cout << "tensor ";
     (void)__print(m_data, m_dims.data(), Order);
     std::cout << '\n';
+
+    std::cout << "shape (";
+    if (m_dims.size() == 1) {
+      std::cout << m_dims[0];
+    } else {
+      for (std::size_t idx = 0; idx < m_dims.size() - 1; ++idx) {
+        std::cout << m_dims[idx] << ", ";
+      }
+      std::cout << m_dims.back();
+    }
+    std::cout << ')' << '\n';
+
+    std::cout << "size " << m_size << '\n';
   }
 
   /**
