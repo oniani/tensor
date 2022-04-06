@@ -132,16 +132,16 @@ namespace builder {
   }
 
   /**
-   * Constructs a one-dimensional tensor including values from begin to end with the given stride.
+   * Constructs an order one tensor including values from begin to end with the given stride.
    *
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @param begin The start of the range.
    * @param end The end of the range.
    * @param stride A stride for the range.
-   * @return A one-dimensional tensor of values specified by the provided range and stride.
+   * @return An order one tensor of values specified by the provided range and stride.
    */
   template <Arithmetic T>
-  [[nodiscard]] constexpr auto range1d(const T begin, const T end, const T stride) {
+  [[nodiscard]] constexpr auto range1(const T begin, const T end, const T stride) {
     auto dims = std::array<std::size_t, 1>{static_cast<std::size_t>((end - begin) / stride)};
     auto result = core::tensor<T, 1>(dims);
     std::size_t idx = 0;

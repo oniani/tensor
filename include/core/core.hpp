@@ -65,9 +65,9 @@ namespace core {
     constexpr tensor() : m_data{nullptr}, m_dims{}, m_size{0}, m_strides{} {}
 
     /**
-     * Constructs a one-dimensional tensor.
+     * Constructs an order one tensor.
      *
-     * @param values An initializer list holding values of the one-dimensional tensor.
+     * @param values An initializer list holding values of the order one tensor.
      */
     constexpr tensor(std::initializer_list<T> values) {
       if (values.size() == 0) {
@@ -85,7 +85,7 @@ namespace core {
     }
 
     /**
-     * Constructs an arbitrary-dimensional tensor.
+     * Constructs a tensor of an arbitrary order.
      *
      * @param t_list An initializer list holding tensors.
      */
