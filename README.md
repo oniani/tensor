@@ -5,7 +5,7 @@ A fast, zero-dependency tensor library in C++.
 ## API
 
 ```cpp
-#include "include/tensor.hpp"
+#include "tensor.hpp"
 
 using namespace type;
 
