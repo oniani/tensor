@@ -33,6 +33,11 @@
 #include <numeric>
 #include <stdexcept>
 
+using size_type = std::size_t;
+
+template <size_type N>
+using array = std::array<size_type, N>;
+
 template <typename T>
 concept Arithmetic = std::is_arithmetic_v<T>;
 
@@ -44,7 +49,7 @@ namespace core {
    * @tparam T An arithmetic type representing the type of each element in tensor.
    * @tparam Order The NTTP representing the order of a tensor.
    */
-  template <Arithmetic T, std::size_t Order>
+  template <Arithmetic T, size_type Order>
   class tensor {
     // NOTE: Prefer "order" to "rank," as its unambiguous and order 0 tensors exist - they are
     // scalars!
@@ -52,9 +57,9 @@ namespace core {
 
    private:
     T* m_data;
-    std::array<std::size_t, Order> m_dims;
-    std::size_t m_size;
-    std::array<std::size_t, Order> m_strides;
+    array<Order> m_dims;
+    size_type m_size;
+    array<Order> m_strides;
 
    public:
     // Core {{{
@@ -84,8 +89,8 @@ namespace core {
      * @param t_list An initializer list holding tensors.
      */
     constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) {
-      std::size_t size{0};
-      std::size_t check_size{0};
+      size_type size{0};
+      size_type check_size{0};
       for (const tensor<T, Order>& t : t_list) {
         if (size == 0) {
           m_dims[0] = t_list.size();
@@ -99,17 +104,17 @@ namespace core {
       m_data = new T[size];
       m_size = size;
 
-      std::size_t acc_idx = 0;
+      size_type acc_idx = 0;
       for (const tensor<T, Order>& t : t_list) {
-        for (std::size_t idx = 0; idx < t.size(); ++idx) {
+        for (size_type idx = 0; idx < t.size(); ++idx) {
           m_data[acc_idx++] = t.m_data[idx];
         }
       }
 
       auto prod = static_cast<float>(m_size);
-      for (std::size_t idx = 0; idx < Order; ++idx) {
+      for (size_type idx = 0; idx < Order; ++idx) {
         prod /= m_dims[idx];
-        m_strides[idx] = static_cast<std::size_t>(prod);
+        m_strides[idx] = static_cast<size_type>(prod);
       }
     }
 
@@ -118,15 +123,15 @@ namespace core {
      *
      * @param dims Dimensions for constructing a tensor.
      */
-    constexpr tensor(const std::array<std::size_t, Order> dims) {
+    constexpr tensor(const array<Order> dims) {
       m_dims = dims;
-      m_size = std::reduce(dims.begin(), dims.end(), 1, std::multiplies<std::size_t>());
+      m_size = std::reduce(dims.begin(), dims.end(), 1, std::multiplies<size_type>());
       m_data = new T[m_size];
 
       auto prod = static_cast<float>(m_size);
-      for (std::size_t idx = 0; idx < Order; ++idx) {
+      for (size_type idx = 0; idx < Order; ++idx) {
         prod /= m_dims[idx];
-        m_strides[idx] = static_cast<std::size_t>(prod);
+        m_strides[idx] = static_cast<size_type>(prod);
       }
     }
 
@@ -209,7 +214,7 @@ namespace core {
      * @param idx An index for obtaining a value.
      * @throws `std::out_of_range`
      */
-    [[nodiscard]] constexpr auto& operator[](const std::size_t idx) const {
+    [[nodiscard]] constexpr auto& operator[](const size_type idx) const {
       if (idx > m_size - 1) {
         throw std::out_of_range("Index out of bounds.");
       }
@@ -228,10 +233,10 @@ namespace core {
      *
      * @param idxs An array of indices for obtaining data.
      */
-    template <std::size_t U>
-    [[nodiscard]] constexpr auto get(const std::array<std::size_t, U> idxs) const {
-      std::size_t flat_idx = 0;
-      for (std::size_t idx = 0; idx < U; ++idx) {
+    template <size_type U>
+    [[nodiscard]] constexpr auto get(const std::array<size_type, U> idxs) const {
+      size_type flat_idx = 0;
+      for (size_type idx = 0; idx < U; ++idx) {
         flat_idx += idxs[idx] * m_strides[idx];
       }
 
@@ -240,14 +245,14 @@ namespace core {
       }
 
       if constexpr (Order != U) {
-        std::array<std::size_t, Order - U> dims;
+        std::array<size_type, Order - U> dims;
         std::copy(m_dims.begin() + U, m_dims.end(), dims.begin());
 
         auto offset =
             std::reduce(m_dims.begin() + idxs.size(), m_dims.end(), 1, std::multiplies<int>());
 
         auto result = tensor<T, Order - U>(dims);
-        for (std::size_t idx = flat_idx; idx < flat_idx + offset; ++idx) {
+        for (size_type idx = flat_idx; idx < flat_idx + offset; ++idx) {
           result[idx - flat_idx] = m_data[idx];
         }
 
@@ -266,17 +271,17 @@ namespace core {
      * @param dims A C-style array representing dimensions.
      * @param order Order of a tensor.
      */
-    constexpr const T* __print(const T* data, const std::size_t* dims, const std::size_t order) {
+    constexpr const T* __print(const T* data, const size_type* dims, const size_type order) {
       const char* p_sep = "";
       std::cout << '{';
       if (order > 1) {
-        for (std::size_t idx = 0; idx < dims[0]; ++idx) {
+        for (size_type idx = 0; idx < dims[0]; ++idx) {
           std::cout << p_sep;
           data = __print(data, &dims[1], order - 1);
           p_sep = ", ";
         }
       } else {
-        for (std::size_t idx = 0; idx < dims[0]; ++idx) {
+        for (size_type idx = 0; idx < dims[0]; ++idx) {
           std::cout << p_sep << *data++;
           p_sep = ", ";
         }
@@ -297,7 +302,7 @@ namespace core {
       if (m_dims.size() == 1) {
         std::cout << m_dims[0];
       } else {
-        for (std::size_t idx = 0; idx < m_dims.size() - 1; ++idx) {
+        for (size_type idx = 0; idx < m_dims.size() - 1; ++idx) {
           std::cout << m_dims[idx] << ", ";
         }
         std::cout << m_dims.back();
@@ -312,7 +317,7 @@ namespace core {
      */
     constexpr void flat_print() const {
       std::cout << '{' << ' ';
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         std::cout << m_data[idx] << ' ';
       }
       std::cout << '}' << std::endl;
@@ -329,7 +334,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto operator+(const tensor& other) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] += other[idx];
       }
       return result;
@@ -342,7 +347,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto operator-(const tensor& other) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] -= other[idx];
       }
       return result;
@@ -355,7 +360,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto operator*(const tensor& other) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] *= other[idx];
       }
       return result;
@@ -368,7 +373,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto operator/(const tensor& other) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         if (other[idx] == 0) {
           throw std::domain_error("Division by zero.");
         }
@@ -390,7 +395,7 @@ namespace core {
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator+(const U& val) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] += val;
       }
       return result;
@@ -405,7 +410,7 @@ namespace core {
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator-(const U& val) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] -= val;
       }
       return result;
@@ -420,7 +425,7 @@ namespace core {
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator*(const U& val) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] *= val;
       }
       return result;
@@ -438,7 +443,7 @@ namespace core {
         throw std::domain_error("Division by zero.");
       }
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] /= val;
       }
       return result;
@@ -460,7 +465,7 @@ namespace core {
       if (m_dims != other.dims()) {
         return false;
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] != other[idx]) {
           return false;
         }
@@ -480,7 +485,7 @@ namespace core {
       if (m_dims != other.dims()) {
         return true;
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] == other[idx]) {
           return false;
         }
@@ -500,7 +505,7 @@ namespace core {
       if (m_dims != other.dims()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] <= other[idx]) {
           return false;
         }
@@ -518,7 +523,7 @@ namespace core {
       if (m_size != other.size()) {
         throw std::runtime_error("Tensor size mismatch.");
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] < other[idx]) {
           return false;
         }
@@ -538,7 +543,7 @@ namespace core {
       if (m_dims != other.dims()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] >= other[idx]) {
           return false;
         }
@@ -559,7 +564,7 @@ namespace core {
       if (m_dims != other.dims()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
-      for (std::size_t idx = 0; idx < m_size; ++idx) {
+      for (size_type idx = 0; idx < m_size; ++idx) {
         if (m_data[idx] > other[idx]) {
           return false;
         }
@@ -579,7 +584,7 @@ namespace core {
     template <Arithmetic U>
     [[nodiscard]] constexpr auto pow(U exp) const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::pow(result[idx], exp);
       }
       return result;
@@ -590,7 +595,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto square() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::pow(result[idx], 2);
       }
       return result;
@@ -601,7 +606,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto sqrt() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::sqrt(result[idx]);
       }
       return result;
@@ -612,7 +617,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto sin() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::sin(result[idx]);
       }
       return result;
@@ -623,7 +628,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto cos() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::cos(result[idx]);
       }
       return result;
@@ -634,7 +639,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto tan() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::tan(result[idx]);
       }
       return result;
@@ -645,7 +650,7 @@ namespace core {
      */
     [[nodiscard]] constexpr auto round() const {
       auto result = *this;
-      for (std::size_t idx = 0; idx < result.size(); ++idx) {
+      for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::round(result[idx]);
       }
       return result;
