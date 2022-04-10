@@ -30,8 +30,7 @@
 namespace builder {
 
   /**
-   * Constructs a tensor of zeros from the provided extents.
-   *
+   * @brief Constructs a tensor of zeros from the provided extents.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param extents Extents for constructing a tensor of zeros.
@@ -47,8 +46,7 @@ namespace builder {
   }
 
   /**
-   * Constructs a tensor of ones from the provided extents.
-   *
+   * @brief Constructs a tensor of ones from the provided extents.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param extents Extents for constructing a tensor of ones.
@@ -64,8 +62,7 @@ namespace builder {
   }
 
   /**
-   * Constructs a tensor of specified values from the provided extents.
-   *
+   * @brief Constructs a tensor of specified values from the provided extents.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param extents Extents for constructing a tensor of specified values.
@@ -81,8 +78,7 @@ namespace builder {
   }
 
   /**
-   * Constructs a tensor of zeros from the extents of the provided tensor.
-   *
+   * @brief Constructs a tensor of zeros from the extents of the provided tensor.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param t A tensor to match the extents against.
@@ -98,8 +94,7 @@ namespace builder {
   }
 
   /**
-   * Constructs a tensor of ones from the extents of the provided tensor.
-   *
+   * @brief Constructs a tensor of ones from the extents of the provided tensor.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param t A tensor to match the extents against.
@@ -115,8 +110,7 @@ namespace builder {
   }
 
   /**
-   * Constructs a tensor of specified values from the extents of the provided tensor.
-   *
+   * @brief Constructs a tensor of specified values from the extents of the provided tensor.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @tparam Order Represents the order of the tensor.
    * @param t A tensor to match the extents against.
@@ -132,8 +126,7 @@ namespace builder {
   }
 
   /**
-   * Constructs an order one tensor including values from begin to end with the given stride.
-   *
+   * @brief Constructs an order one tensor including values from begin to end with the given stride.
    * @tparam T An arithmetic type representing the type of every element in the returned tensor.
    * @param begin The start of the range.
    * @param end The end of the range.
