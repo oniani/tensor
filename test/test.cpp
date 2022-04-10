@@ -7,7 +7,7 @@ using namespace type;
 
 // tensor1 {{{
 
-TEST_CASE("tensor1 - Core utilities", "[tensor1][arithmetic][data][dims][size][get]") {
+TEST_CASE("tensor1 - Core utilities", "[tensor1][arithmetic][data][extents][size][get]") {
   const tensor1<float> t1{0, 1, 2, 3, 4};
   const tensor1<float> t2{5, 6, 7, 8, 9};
 
@@ -18,8 +18,8 @@ TEST_CASE("tensor1 - Core utilities", "[tensor1][arithmetic][data][dims][size][g
     REQUIRE(t2.data()[idx] == t2[idx]);
   }
 
-  REQUIRE(t1.dims() == std::array<std::size_t, 1>{5});
-  REQUIRE(t2.dims() == std::array<std::size_t, 1>{5});
+  REQUIRE(t1.extents() == std::array<std::size_t, 1>{5});
+  REQUIRE(t2.extents() == std::array<std::size_t, 1>{5});
 
   REQUIRE(t1.size() == 5);
   REQUIRE(t2.size() == 5);
@@ -144,7 +144,7 @@ TEST_CASE("tensor1 - Handy broadcasting operations", "[tensor1][pow][square][sqr
 
 // tensor2 {{{
 
-TEST_CASE("tensor2 - Core utilities", "[tensor2][arithmetic][data][dims][size][get]") {
+TEST_CASE("tensor2 - Core utilities", "[tensor2][arithmetic][data][extents][size][get]") {
   const tensor2<float> t1{{0, 1}, {2, 3}, {4, 4}};
   const tensor2<float> t2{{5, 6}, {7, 8}, {9, 9}};
 
@@ -155,8 +155,8 @@ TEST_CASE("tensor2 - Core utilities", "[tensor2][arithmetic][data][dims][size][g
     REQUIRE(t2.data()[idx] == t2[idx]);
   }
 
-  REQUIRE(t1.dims() == std::array<std::size_t, 2>{3, 2});
-  REQUIRE(t2.dims() == std::array<std::size_t, 2>{3, 2});
+  REQUIRE(t1.extents() == std::array<std::size_t, 2>{3, 2});
+  REQUIRE(t2.extents() == std::array<std::size_t, 2>{3, 2});
 
   REQUIRE(t1.size() == 6);
   REQUIRE(t2.size() == 6);

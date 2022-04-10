@@ -46,18 +46,16 @@ namespace core {
   /**
    * Defines the representation of a tensor.
    *
+   * NOTE: Prefer "order" to "rank," as its unambiguous and order 0 tensors exist (they are scalars)
+   *
    * @tparam T An arithmetic type representing the type of each element in tensor.
    * @tparam Order The NTTP representing the order of a tensor.
    */
   template <Arithmetic T, size_type Order>
   class tensor {
-    // NOTE: Prefer "order" to "rank," as its unambiguous and order 0 tensors exist - they are
-    // scalars!
-    static_assert(Order >= 0, "Order must be a non-negative integer.");
-
    private:
     T* m_data;
-    array<Order> m_dims;
+    array<Order> m_extents;
     size_type m_size;
     array<Order> m_strides;
 
@@ -67,7 +65,7 @@ namespace core {
     /**
      * Constructs an empty tensor.
      */
-    constexpr tensor() : m_data{nullptr}, m_dims{}, m_size{0}, m_strides{} {}
+    constexpr tensor() : m_data{nullptr}, m_extents{}, m_size{0}, m_strides{} {}
 
     /**
      * Constructs an order one tensor.
@@ -76,7 +74,7 @@ namespace core {
      */
     constexpr tensor(std::initializer_list<T> values) {
       m_size = values.size();
-      m_dims = {m_size};
+      m_extents = {m_size};
       m_strides = {1};
 
       m_data = new T[m_size];
@@ -93,8 +91,8 @@ namespace core {
       size_type check_size{0};
       for (const tensor<T, Order>& t : t_list) {
         if (size == 0) {
-          m_dims[0] = t_list.size();
-          std::copy(t.m_dims.begin(), t.m_dims.begin() + Order, m_dims.begin() + 1);
+          m_extents[0] = t_list.size();
+          std::copy(t.m_extents.begin(), t.m_extents.begin() + Order, m_extents.begin() + 1);
           check_size = t.size();
         } else if (check_size != t.size()) {
           throw std::runtime_error("Tensor dimension mismatch.");
@@ -113,24 +111,24 @@ namespace core {
 
       auto prod = static_cast<float>(m_size);
       for (size_type idx = 0; idx < Order; ++idx) {
-        prod /= m_dims[idx];
+        prod /= m_extents[idx];
         m_strides[idx] = static_cast<size_type>(prod);
       }
     }
 
     /**
-     * Constructs a tensor from the provided dimensions.
+     * Constructs a tensor from the provided extents.
      *
-     * @param dims Dimensions for constructing a tensor.
+     * @param extents Extents for constructing a tensor.
      */
-    constexpr tensor(const array<Order> dims) {
-      m_dims = dims;
-      m_size = std::reduce(dims.begin(), dims.end(), 1, std::multiplies<size_type>());
+    constexpr tensor(const array<Order> extents) {
+      m_extents = extents;
+      m_size = std::reduce(extents.begin(), extents.end(), 1, std::multiplies<size_type>());
       m_data = new T[m_size];
 
       auto prod = static_cast<float>(m_size);
       for (size_type idx = 0; idx < Order; ++idx) {
-        prod /= m_dims[idx];
+        prod /= m_extents[idx];
         m_strides[idx] = static_cast<size_type>(prod);
       }
     }
@@ -144,7 +142,7 @@ namespace core {
       m_data = new T[rhs.m_size];
       std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
 
-      m_dims = rhs.m_dims;
+      m_extents = rhs.m_extents;
       m_size = rhs.m_size;
       m_strides = rhs.m_strides;
     }
@@ -159,7 +157,7 @@ namespace core {
         m_data = new T[rhs.m_size];
         std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
 
-        m_dims = rhs.m_dims;
+        m_extents = rhs.m_extents;
         m_size = rhs.m_size;
         m_strides = rhs.m_strides;
       }
@@ -172,7 +170,10 @@ namespace core {
      * @param rhs A right-hand side of the assignment.
      */
     constexpr tensor(tensor&& rhs) noexcept
-        : m_data{rhs.m_data}, m_dims{rhs.m_dims}, m_size{rhs.m_size}, m_strides{rhs.m_strides} {
+        : m_data{rhs.m_data},
+          m_extents{rhs.m_extents},
+          m_size{rhs.m_size},
+          m_strides{rhs.m_strides} {
       rhs.m_data = nullptr;
     }
 
@@ -184,7 +185,7 @@ namespace core {
     constexpr auto& operator=(const tensor&& rhs) noexcept {
       if (this != &rhs) {
         m_data = rhs.m_data;
-        m_dims = rhs.m_dims;
+        m_extents = rhs.m_extents;
         m_size = rhs.m_size;
         m_strides = rhs.m_strides;
 
@@ -225,7 +226,7 @@ namespace core {
      * Getter methods for member variables.
      */
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
-    [[nodiscard]] constexpr auto dims() const noexcept { return m_dims; }
+    [[nodiscard]] constexpr auto extents() const noexcept { return m_extents; }
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /**
@@ -245,13 +246,13 @@ namespace core {
       }
 
       if constexpr (Order != U) {
-        std::array<size_type, Order - U> dims;
-        std::copy(m_dims.begin() + U, m_dims.end(), dims.begin());
+        std::array<size_type, Order - U> extents;
+        std::copy(m_extents.begin() + U, m_extents.end(), extents.begin());
 
-        auto offset =
-            std::reduce(m_dims.begin() + idxs.size(), m_dims.end(), 1, std::multiplies<int>());
+        auto offset = std::reduce(m_extents.begin() + idxs.size(), m_extents.end(), 1,
+                                  std::multiplies<int>());
 
-        auto result = tensor<T, Order - U>(dims);
+        auto result = tensor<T, Order - U>(extents);
         for (size_type idx = flat_idx; idx < flat_idx + offset; ++idx) {
           result[idx - flat_idx] = m_data[idx];
         }
@@ -268,20 +269,20 @@ namespace core {
      * A helper method for printing a tensor.
      *
      * @param data Data representation.
-     * @param dims A C-style array representing dimensions.
+     * @param extents A C-style array representing extents.
      * @param order Order of a tensor.
      */
-    constexpr const T* __print(const T* data, const size_type* dims, const size_type order) {
+    constexpr const T* __print(const T* data, const size_type* extents, const size_type order) {
       const char* p_sep = "";
       std::cout << '{';
       if (order > 1) {
-        for (size_type idx = 0; idx < dims[0]; ++idx) {
+        for (size_type idx = 0; idx < extents[0]; ++idx) {
           std::cout << p_sep;
-          data = __print(data, &dims[1], order - 1);
+          data = __print(data, &extents[1], order - 1);
           p_sep = ", ";
         }
       } else {
-        for (size_type idx = 0; idx < dims[0]; ++idx) {
+        for (size_type idx = 0; idx < extents[0]; ++idx) {
           std::cout << p_sep << *data++;
           p_sep = ", ";
         }
@@ -295,17 +296,17 @@ namespace core {
      */
     constexpr void print() {
       std::cout << "tensor ";
-      (void)__print(m_data, m_dims.data(), Order);
+      (void)__print(m_data, m_extents.data(), Order);
       std::cout << '\n';
 
       std::cout << "shape (";
-      if (m_dims.size() == 1) {
-        std::cout << m_dims[0];
+      if (m_extents.size() == 1) {
+        std::cout << m_extents[0];
       } else {
-        for (size_type idx = 0; idx < m_dims.size() - 1; ++idx) {
-          std::cout << m_dims[idx] << ", ";
+        for (size_type idx = 0; idx < m_extents.size() - 1; ++idx) {
+          std::cout << m_extents[idx] << ", ";
         }
-        std::cout << m_dims.back();
+        std::cout << m_extents.back();
       }
       std::cout << ')' << '\n';
 
@@ -462,7 +463,7 @@ namespace core {
       if (m_size != other.size()) {
         return false;
       }
-      if (m_dims != other.dims()) {
+      if (m_extents != other.extents()) {
         return false;
       }
       for (size_type idx = 0; idx < m_size; ++idx) {
@@ -482,7 +483,7 @@ namespace core {
       if (m_size != other.size()) {
         return true;
       }
-      if (m_dims != other.dims()) {
+      if (m_extents != other.extents()) {
         return true;
       }
       for (size_type idx = 0; idx < m_size; ++idx) {
@@ -502,7 +503,7 @@ namespace core {
       if (m_size != other.size()) {
         throw std::runtime_error("Tensor size mismatch.");
       }
-      if (m_dims != other.dims()) {
+      if (m_extents != other.extents()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
       for (size_type idx = 0; idx < m_size; ++idx) {
@@ -540,7 +541,7 @@ namespace core {
       if (m_size != other.size()) {
         throw std::runtime_error("Tensor size mismatch.");
       }
-      if (m_dims != other.dims()) {
+      if (m_extents != other.extents()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
       for (size_type idx = 0; idx < m_size; ++idx) {
@@ -561,7 +562,7 @@ namespace core {
       if (m_size != other.size()) {
         throw std::runtime_error("Tensor size mismatch.");
       }
-      if (m_dims != other.dims()) {
+      if (m_extents != other.extents()) {
         throw std::runtime_error("Tensor dimension mismatch.");
       }
       for (size_type idx = 0; idx < m_size; ++idx) {
