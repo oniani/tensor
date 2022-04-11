@@ -69,7 +69,7 @@ namespace core {
 
     /**
      * @brief Constructs an order one tensor.
-     * @param values An initializer list holding values of the order one tensor.
+     * @param values Initializer list holding values of the order one tensor.
      */
     constexpr tensor(std::initializer_list<T> values) noexcept {
       m_size = values.size();
@@ -82,7 +82,7 @@ namespace core {
 
     /**
      * @brief Constructs a tensor of an arbitrary order.
-     * @param t_list An initializer list holding tensors.
+     * @param t_list Initializer list holding tensors.
      */
     constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) {
       size_type size{0};
@@ -132,7 +132,7 @@ namespace core {
 
     /**
      * @brief Defines a copy constructor.
-     * @param rhs A right-hand side of the assignment.
+     * @param rhs Right-hand side of the assignment.
      */
     constexpr tensor(const tensor& rhs) {
       m_data = new T[rhs.m_size];
@@ -145,7 +145,7 @@ namespace core {
 
     /**
      * @brief Overloads the copy assignment operator.
-     * @param rhs A right-hand side of the assignment.
+     * @param rhs Right-hand side of the assignment.
      */
     constexpr auto& operator=(const tensor& rhs) {
       if (this != &rhs) {
@@ -161,7 +161,7 @@ namespace core {
 
     /**
      * @brief Defines a move constructor.
-     * @param rhs A right-hand side of the assignment.
+     * @param rhs Right-hand side of the assignment.
      */
     constexpr tensor(tensor&& rhs) noexcept
         : m_data{rhs.m_data},
@@ -173,7 +173,7 @@ namespace core {
 
     /**
      * @brief Overloads the move assignment operator.
-     * @param rhs A right-hand side of the assignment.
+     * @param rhs Right-hand side of the assignment.
      */
     constexpr auto& operator=(const tensor&& rhs) noexcept {
       if (this != &rhs) {
@@ -189,7 +189,7 @@ namespace core {
 
     /**
      * @brief Defines the destructor. Frees the memory and points the dangling pointer to `nullptr`.
-     * @param rhs A right-hand side of the assignment.
+     * @param rhs Right-hand side of the assignment.
      */
     constexpr ~tensor() {
       delete[] m_data;
@@ -202,7 +202,7 @@ namespace core {
 
     /**
      * @brief Defines an operator for getting raw data.
-     * @param idx An index for obtaining a value.
+     * @param idx Index for obtaining a value.
      */
     [[nodiscard]] constexpr auto& operator[](const size_type idx) const {
       if (idx > m_size - 1) {
@@ -212,15 +212,26 @@ namespace core {
     }
 
     /**
-     * @brief Getter methods for member variables.
+     * @brief Returns a pointer to the underlying pointer.
+     * @return A pointer to the underlying pointer.
      */
     [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
+
+    /**
+     * @brief Returns the extents.
+     * @return Extents.
+     */
     [[nodiscard]] constexpr auto extents() const noexcept { return m_extents; }
+
+    /**
+     * @brief Returns the size of the tensor.
+     * @return Size of the tensor.
+     */
     [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
 
     /**
      * @brief Getter methods for member variables.
-     * @param idxs An array of indices for obtaining data.
+     * @param idxs Array of indices for obtaining data.
      */
     template <size_type U>
     [[nodiscard]] constexpr auto get(const std::array<size_type, U> idxs) const {
@@ -254,9 +265,9 @@ namespace core {
     // Printing {{{
 
     /**
-     * @brief A helper method for printing a tensor.
+     * @brief Helper method for printing a tensor.
      * @param data Data representation.
-     * @param extents A C-style array representing extents.
+     * @param Extents C-style array representing extents.
      * @param order Order of a tensor.
      */
     constexpr const T* __print(const T* data, const size_type* extents, const size_type order) {
@@ -316,8 +327,9 @@ namespace core {
     // Basic arithmetic operators {{{
 
     /**
-     * @brief Add the other tensor to the tensor.
-     * @param other The other tensor.
+     * @brief Adds the other tensor to the tensor.
+     * @param other Other tensor.
+     * @return New tensor representing the result of the addition.
      */
     [[nodiscard]] constexpr auto operator+(const tensor& other) const {
       auto result = *this;
@@ -329,7 +341,8 @@ namespace core {
 
     /**
      * @brief Subtracts the other tensor from the tensor.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return New tensor representing the result of the subtraction.
      */
     [[nodiscard]] constexpr auto operator-(const tensor& other) const {
       auto result = *this;
@@ -341,7 +354,8 @@ namespace core {
 
     /**
      * @brief Multiplies the tensor by the other tensor.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return New tensor representing the result of the multiplication.
      */
     [[nodiscard]] constexpr auto operator*(const tensor& other) const {
       auto result = *this;
@@ -353,7 +367,8 @@ namespace core {
 
     /**
      * @brief Divides the tensor by the other tensor.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return New tensor representing the result of the division.
      */
     [[nodiscard]] constexpr auto operator/(const tensor& other) const {
       auto result = *this;
@@ -372,8 +387,9 @@ namespace core {
 
     /**
      * @brief Broadcasts addition via the specified value.
-     * @tparam U An arithmetic type specifying the type of the addition value.
-     * @param val The value to be added to every element of the tensor.
+     * @tparam U Arithmetic type specifying the type of the addition value.
+     * @param val Value to be added to every element of the tensor.
+     * @return Result tensor with every value incremented by `val`.
      */
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator+(const U& val) const {
@@ -386,8 +402,9 @@ namespace core {
 
     /**
      * @brief Broadcasts subtraction via the specified value.
-     * @tparam U An arithmetic type specifying the type of the subtraction value.
-     * @param val The value to be subtracted from every element of the tensor.
+     * @tparam U Arithmetic type specifying the type of the subtraction value.
+     * @param val Value to be subtracted from every element of the tensor.
+     * @return Result tensor with every value decremented by `val`.
      */
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator-(const U& val) const {
@@ -400,8 +417,9 @@ namespace core {
 
     /**
      * @brief Broadcasts multiplication via the specified value.
-     * @tparam U An arithmetic type specifying the type of the multiplication value.
-     * @param val The value to be multiplied by every element of the tensor.
+     * @tparam U Arithmetic type specifying the type of the multiplication value.
+     * @param val Value to be multiplied by every element of the tensor.
+     * @return Result tensor with every value multiplied by `val`.
      */
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator*(const U& val) const {
@@ -414,8 +432,9 @@ namespace core {
 
     /**
      * @brief Broadcasts division via the specified value.
-     * @tparam U An arithmetic type specifying the type of the division value.
-     * @param val The value to be divided by every element of the tensor.
+     * @tparam U Arithmetic type specifying the type of the division value.
+     * @param val Value to be divided by every element of the tensor.
+     * @return Result tensor with every value divided by `val`.
      */
     template <Arithmetic U>
     [[nodiscard]] constexpr auto operator/(const U& val) const {
@@ -435,7 +454,8 @@ namespace core {
 
     /**
      * @brief Returns true if the tensor is equal to the other tensor, false otherwise.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator==(const tensor& other) const {
       if (m_size != other.size()) {
@@ -454,7 +474,8 @@ namespace core {
 
     /**
      * @brief Returns true if the tensor is not equal to the other tensor, false otherwise.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator!=(const tensor& other) const {
       if (m_size != other.size()) {
@@ -473,7 +494,8 @@ namespace core {
 
     /**
      * @brief Returns true if tensor is greater in all element-wise comparisons.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator>(const tensor& other) const {
       if (m_size != other.size()) {
@@ -492,7 +514,8 @@ namespace core {
 
     /**
      * @brief Returns true if tensor is greater than or equal in all element-wise comparisons.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator>=(const tensor& other) const {
       if (m_size != other.size()) {
@@ -508,7 +531,8 @@ namespace core {
 
     /**
      * @brief Returns true if tensor is less than in all element-wise comparisons.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator<(const tensor& other) const {
       if (m_size != other.size()) {
@@ -527,7 +551,8 @@ namespace core {
 
     /**
      * @brief Returns true if tensor is less than or equal in all element-wise comparisons.
-     * @param other The other tensor.
+     * @param other Other tensor.
+     * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator<=(const tensor& other) const {
       if (m_size != other.size()) {
@@ -550,7 +575,8 @@ namespace core {
 
     /**
      * @brief Broadcasts the power operation across the tensor.
-     * @param exp The exponent.
+     * @param exp Exponent.
+     * @return Tensor with every value transformed via the power function.
      */
     template <Arithmetic U>
     [[nodiscard]] constexpr auto pow(U exp) const {
@@ -563,6 +589,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the square operation across the tensor.
+     * @return Tensor with every value transformed via the square function.
      */
     [[nodiscard]] constexpr auto square() const {
       auto result = *this;
@@ -574,6 +601,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the square root operation across the tensor.
+     * @return Tensor with every value transformed via the square root function.
      */
     [[nodiscard]] constexpr auto sqrt() const {
       auto result = *this;
@@ -585,6 +613,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the sine operation across the tensor.
+     * @return Tensor with every value transformed via the sine function.
      */
     [[nodiscard]] constexpr auto sin() const {
       auto result = *this;
@@ -596,6 +625,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the cosine operation across the tensor.
+     * @return Tensor with every value transformed via the cosine function.
      */
     [[nodiscard]] constexpr auto cos() const {
       auto result = *this;
@@ -607,6 +637,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the tangent operation across the tensor.
+     * @return Tensor with every value transformed via the tangent function.
      */
     [[nodiscard]] constexpr auto tan() const {
       auto result = *this;
@@ -618,6 +649,7 @@ namespace core {
 
     /**
      * @brief Broadcasts the round operation across the tensor.
+     * @return Tensor with every value transformed via the round function.
      */
     [[nodiscard]] constexpr auto round() const {
       auto result = *this;

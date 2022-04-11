@@ -28,56 +28,56 @@ namespace type {
 
   /**
    * @brief Constructs a type representing an order one tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor1 = core::tensor<T, 1>;
 
   /**
    * @brief Constructs a type representing an order two tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor2 = core::tensor<T, 2>;
 
   /**
    * @brief Constructs a type representing an order three tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor3 = core::tensor<T, 3>;
 
   /**
    * @brief Constructs a type representing an order four tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor4 = core::tensor<T, 4>;
 
   /**
    * @brief Constructs a type representing an order five tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor5 = core::tensor<T, 5>;
 
   /**
    * @brief Constructs a type representing an order six tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor6 = core::tensor<T, 6>;
 
   /**
    * @brief Constructs a type representing an order seven tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor7 = core::tensor<T, 7>;
 
   /**
    * @brief Constructs a type representing an order eight tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
    */
   template <Arithmetic T>
   using tensor8 = core::tensor<T, 8>;

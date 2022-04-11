@@ -31,8 +31,8 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of zeros from the provided extents.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
    * @param extents Extents for constructing a tensor of zeros.
    * @return A tensor of zeros with the provided extents.
    */
@@ -47,8 +47,8 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of ones from the provided extents.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
    * @param extents Extents for constructing a tensor of ones.
    * @return A tensor of ones with the provided extents.
    */
@@ -63,8 +63,8 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of specified values from the provided extents.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
    * @param extents Extents for constructing a tensor of specified values.
    * @return A tensor of specified values with the provided extents.
    */
@@ -79,9 +79,9 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of zeros from the extents of the provided tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
-   * @param t A tensor to match the extents against.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
+   * @param t Tensor to match the extents against.
    * @return A tensor of zeros with the extents of the provided tensor.
    */
   template <Arithmetic T, size_type Order>
@@ -95,9 +95,9 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of ones from the extents of the provided tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
-   * @param t A tensor to match the extents against.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
+   * @param t Tensor to match the extents against.
    * @return A tensor of ones with the extents of the provided tensor.
    */
   template <Arithmetic T, size_type Order>
@@ -111,9 +111,9 @@ namespace builder {
 
   /**
    * @brief Constructs a tensor of specified values from the extents of the provided tensor.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Represents the order of the tensor.
-   * @param t A tensor to match the extents against.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @tparam Order Order of the tensor.
+   * @param t Tensor to match the extents against.
    * @return A tensor of specified values with the extents of the provided tensor.
    */
   template <Arithmetic T, size_type Order>
@@ -127,10 +127,10 @@ namespace builder {
 
   /**
    * @brief Constructs an order one tensor including values from begin to end with the given stride.
-   * @tparam T An arithmetic type representing the type of every element in the returned tensor.
-   * @param begin The start of the range.
-   * @param end The end of the range.
-   * @param stride A stride for the range.
+   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+   * @param begin Start of the range.
+   * @param end End of the range.
+   * @param stride Stride for the range.
    * @return An order one tensor of values specified by the provided range and stride.
    */
   template <Arithmetic T>
