@@ -22,6 +22,9 @@
  * SOFTWARE.
  */
 
+#ifndef TYPE_HPP
+#define TYPE_HPP
+
 #include "core.hpp"
 
 namespace type {
@@ -83,3 +86,5 @@ namespace type {
   using tensor8 = core::tensor<T, 8>;
 
 }  // namespace type
+
+#endif  // TYPE_HPP
