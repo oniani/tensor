@@ -39,7 +39,7 @@ template <size_type N>
 using array = std::array<size_type, N>;
 
 template <typename T>
-concept Arithmetic = std::is_arithmetic_v<T>;
+concept arithmetic = std::is_arithmetic_v<T>;
 
 namespace core {
 
@@ -51,7 +51,7 @@ namespace core {
    * @tparam T An arithmetic type representing the type of each element in tensor.
    * @tparam Order The NTTP representing the order of a tensor.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   class tensor {
    private:
     T* m_data;
@@ -387,12 +387,10 @@ namespace core {
 
     /**
      * @brief Broadcasts addition via the specified value.
-     * @tparam U Arithmetic type specifying the type of the addition value.
      * @param val Value to be added to every element of the tensor.
      * @return Result tensor with every value incremented by `val`.
      */
-    template <Arithmetic U>
-    [[nodiscard]] constexpr auto operator+(const U& val) const {
+    [[nodiscard]] constexpr auto operator+(const arithmetic auto& val) const {
       auto result = *this;
       for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] += val;
@@ -402,12 +400,10 @@ namespace core {
 
     /**
      * @brief Broadcasts subtraction via the specified value.
-     * @tparam U Arithmetic type specifying the type of the subtraction value.
      * @param val Value to be subtracted from every element of the tensor.
      * @return Result tensor with every value decremented by `val`.
      */
-    template <Arithmetic U>
-    [[nodiscard]] constexpr auto operator-(const U& val) const {
+    [[nodiscard]] constexpr auto operator-(const arithmetic auto& val) const {
       auto result = *this;
       for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] -= val;
@@ -417,12 +413,10 @@ namespace core {
 
     /**
      * @brief Broadcasts multiplication via the specified value.
-     * @tparam U Arithmetic type specifying the type of the multiplication value.
      * @param val Value to be multiplied by every element of the tensor.
      * @return Result tensor with every value multiplied by `val`.
      */
-    template <Arithmetic U>
-    [[nodiscard]] constexpr auto operator*(const U& val) const {
+    [[nodiscard]] constexpr auto operator*(const arithmetic auto& val) const {
       auto result = *this;
       for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] *= val;
@@ -432,12 +426,10 @@ namespace core {
 
     /**
      * @brief Broadcasts division via the specified value.
-     * @tparam U Arithmetic type specifying the type of the division value.
      * @param val Value to be divided by every element of the tensor.
      * @return Result tensor with every value divided by `val`.
      */
-    template <Arithmetic U>
-    [[nodiscard]] constexpr auto operator/(const U& val) const {
+    [[nodiscard]] constexpr auto operator/(const arithmetic auto& val) const {
       if (val == 0) {
         throw std::domain_error("Division by zero.");
       }
@@ -578,8 +570,7 @@ namespace core {
      * @param exp Exponent.
      * @return Tensor with every value transformed via the power function.
      */
-    template <Arithmetic U>
-    [[nodiscard]] constexpr auto pow(U exp) const {
+    [[nodiscard]] constexpr auto pow(const arithmetic auto exp) const {
       auto result = *this;
       for (size_type idx = 0; idx < result.size(); ++idx) {
         result[idx] = std::pow(result[idx], exp);

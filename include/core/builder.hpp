@@ -36,7 +36,7 @@ namespace builder {
    * @param extents Extents for constructing a tensor of zeros.
    * @return A tensor of zeros with the provided extents.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto zeros(const array<Order>& extents) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
@@ -52,7 +52,7 @@ namespace builder {
    * @param extents Extents for constructing a tensor of ones.
    * @return A tensor of ones with the provided extents.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto ones(const array<Order>& extents) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
@@ -68,7 +68,7 @@ namespace builder {
    * @param extents Extents for constructing a tensor of specified values.
    * @return A tensor of specified values with the provided extents.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto xs(const array<Order>& extents, const T x) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
@@ -84,7 +84,7 @@ namespace builder {
    * @param t Tensor to match the extents against.
    * @return A tensor of zeros with the extents of the provided tensor.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto zeros_like(const core::tensor<T, Order>& t) {
     auto result = core::tensor<T, Order>(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
@@ -100,7 +100,7 @@ namespace builder {
    * @param t Tensor to match the extents against.
    * @return A tensor of ones with the extents of the provided tensor.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto ones_like(const core::tensor<T, Order>& t) {
     auto result = core::tensor<T, Order>(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
@@ -116,7 +116,7 @@ namespace builder {
    * @param t Tensor to match the extents against.
    * @return A tensor of specified values with the extents of the provided tensor.
    */
-  template <Arithmetic T, size_type Order>
+  template <arithmetic T, size_type Order>
   [[nodiscard]] constexpr auto xs_like(const core::tensor<T, Order>& t, const T x) {
     auto result = core::tensor(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
@@ -133,7 +133,7 @@ namespace builder {
    * @param stride Stride for the range.
    * @return An order one tensor of values specified by the provided range and stride.
    */
-  template <Arithmetic T>
+  template <arithmetic T>
   [[nodiscard]] constexpr auto range1(const T begin, const T end, const T stride) {
     auto extents = std::array<size_type, 1>{static_cast<size_type>((end - begin) / stride)};
     auto result = core::tensor<T, 1>(extents);
