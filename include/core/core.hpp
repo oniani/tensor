@@ -44,10 +44,8 @@ concept arithmetic = std::is_arithmetic_v<T>;
 namespace core {
 
   /**
-   * Defines the representation of a tensor.
-   *
-   * NOTE: Prefer "order" to "rank," as its unambiguous and order 0 tensors exist (they are scalars)
-   *
+   * @brief Defines the representation of a tensor. Prefer "order" to "rank," as its unambiguous and
+   * order 0 tensors exist (they are scalars).
    * @tparam T An arithmetic type representing the type of each element in tensor.
    * @tparam Order The NTTP representing the order of a tensor.
    */
