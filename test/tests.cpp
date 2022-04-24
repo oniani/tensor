@@ -1,7 +1,6 @@
-#define CATCH_CONFIG_MAIN
+#include <catch2/catch.hpp>
 
 #include "../include/tensor.hpp"
-#include "../third_party/catch.hpp"
 
 using namespace type;
 

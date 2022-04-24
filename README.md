@@ -20,13 +20,17 @@ int main() {
 ```console
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_CXX_COMPILER=clang++ .. && cmake --build . && ./test/tests
+$ cmake -DCOMPILER=clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=VCPKG_TOOLCHAIN_FILE ..
+$ cmake --build .
 ```
 
 ## References
 
-- [Tensor](https://en.wikipedia.org/wiki/Tensor)
+- [Tensor][tensor]
 
 ## License
 
-[MIT License](LICENSE)
+[MIT License][license]
+
+[tensor]: https://en.wikipedia.org/wiki/Tensor
+[license]: LICENSE

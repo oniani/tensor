@@ -1,5 +1,7 @@
-add_library(Catch2 INTERFACE)
-target_include_directories(Catch2 INTERFACE ../third_party)
+find_package(Catch2 REQUIRED)
 
-add_executable(tests test.cpp)
-target_link_libraries(tests Catch2)
+add_library(catch_main OBJECT catch_main.cpp)
+target_link_libraries(catch_main PUBLIC Catch2::Catch2)
+
+add_executable(tests tests.cpp)
+target_link_libraries(tests PRIVATE catch_main)
