@@ -58,8 +58,6 @@ namespace core {
     array<Order> m_strides;
 
    public:
-    // Core {{{
-
     /**
      * @brief Constructs an empty tensor.
      */
@@ -69,11 +67,9 @@ namespace core {
      * @brief Constructs an order one tensor.
      * @param values Initializer list holding values of the order one tensor.
      */
-    constexpr tensor(std::initializer_list<T> values) noexcept {
-      m_size = values.size();
+    constexpr tensor(std::initializer_list<T> values) noexcept
+        : m_size(values.size()), m_strides({1}) {
       m_extents = {m_size};
-      m_strides = {1};
-
       m_data = new T[m_size];
       std::copy(values.begin(), values.end(), m_data);
     }
@@ -116,11 +112,10 @@ namespace core {
      * @brief Constructs a tensor from the provided extents.
      * @param extents Extents for constructing a tensor.
      */
-    constexpr tensor(const array<Order> extents) {
-      m_extents = extents;
-      m_size = std::reduce(extents.begin(), extents.end(), 1, std::multiplies<size_type>());
+    constexpr tensor(const array<Order> extents)
+        : m_extents(extents),
+          m_size(std::reduce(extents.begin(), extents.end(), 1, std::multiplies<size_type>())) {
       m_data = new T[m_size];
-
       auto prod = static_cast<float>(m_size);
       for (size_type idx = 0; idx < Order; ++idx) {
         prod /= m_extents[idx];
@@ -132,13 +127,12 @@ namespace core {
      * @brief Defines a copy constructor.
      * @param rhs Right-hand side of the assignment.
      */
-    constexpr tensor(const tensor& rhs) {
-      m_data = new T[rhs.m_size];
+    constexpr tensor(const tensor& rhs)
+        : m_data(new T[rhs.m_size]),
+          m_extents(rhs.m_extents),
+          m_size(rhs.m_size),
+          m_strides(rhs.m_strides) {
       std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
-
-      m_extents = rhs.m_extents;
-      m_size = rhs.m_size;
-      m_strides = rhs.m_strides;
     }
 
     /**
@@ -173,7 +167,7 @@ namespace core {
      * @brief Overloads the move assignment operator.
      * @param rhs Right-hand side of the assignment.
      */
-    constexpr auto& operator=(const tensor&& rhs) noexcept {
+    constexpr auto& operator=(tensor&& rhs) noexcept {
       if (this != &rhs) {
         m_data = rhs.m_data;
         m_extents = rhs.m_extents;
@@ -193,10 +187,6 @@ namespace core {
       delete[] m_data;
       m_data = nullptr;
     }
-
-    // }}}
-
-    // Core utilities {{{
 
     /**
      * @brief Defines an operator for getting raw data.
@@ -258,10 +248,6 @@ namespace core {
       }
     }
 
-    // }}}
-
-    // Printing {{{
-
     /**
      * @brief Helper method for printing a tensor.
      * @param data Data representation.
@@ -320,10 +306,6 @@ namespace core {
       std::cout << '}' << std::endl;
     }
 
-    // }}}
-
-    // Basic arithmetic operators {{{
-
     /**
      * @brief Adds the other tensor to the tensor.
      * @param other Other tensor.
@@ -379,10 +361,6 @@ namespace core {
       return result;
     }
 
-    // }}}
-
-    // Basic arithmetic broadcasting {{{
-
     /**
      * @brief Broadcasts addition via the specified value.
      * @param val Value to be added to every element of the tensor.
@@ -437,10 +415,6 @@ namespace core {
       }
       return result;
     }
-
-    // }}}
-
-    // Comparsion operators {{{
 
     /**
      * @brief Returns true if the tensor is equal to the other tensor, false otherwise.
@@ -559,10 +533,6 @@ namespace core {
       return true;
     }
 
-    // }}}
-
-    // Handy broadcasting operations {{{
-
     /**
      * @brief Broadcasts the power operation across the tensor.
      * @param exp Exponent.
@@ -647,8 +617,6 @@ namespace core {
       }
       return result;
     }
-
-    // }}}
   };
 
 }  // namespace core
