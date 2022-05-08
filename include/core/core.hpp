@@ -203,19 +203,25 @@ namespace core {
      * @brief Returns a pointer to the underlying pointer.
      * @return A pointer to the underlying pointer.
      */
-    [[nodiscard]] constexpr auto data() const noexcept { return m_data; }
+    [[nodiscard]] constexpr auto data() const noexcept {
+      return m_data;
+    }
 
     /**
      * @brief Returns the extents.
      * @return Extents.
      */
-    [[nodiscard]] constexpr auto extents() const noexcept { return m_extents; }
+    [[nodiscard]] constexpr auto extents() const noexcept {
+      return m_extents;
+    }
 
     /**
      * @brief Returns the size of the tensor.
      * @return Size of the tensor.
      */
-    [[nodiscard]] constexpr auto size() const noexcept { return m_size; }
+    [[nodiscard]] constexpr auto size() const noexcept {
+      return m_size;
+    }
 
     /**
      * @brief Getter methods for member variables.
