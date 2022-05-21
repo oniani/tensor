@@ -43,14 +43,14 @@ concept arithmetic = std::is_arithmetic_v<T>;
 
 namespace core {
 
-  /**
-   * @brief Defines the representation of a tensor. Prefer "order" to "rank," as its unambiguous and
-   * order 0 tensors exist (they are scalars).
-   * @tparam T An arithmetic type representing the type of each element in tensor.
-   * @tparam Order The NTTP representing the order of a tensor.
-   */
-  template <arithmetic T, size_type Order>
-  class tensor {
+/**
+ * @brief Defines the representation of a tensor. Prefer "order" to "rank," as its unambiguous and
+ * order 0 tensors exist (they are scalars).
+ * @tparam T An arithmetic type representing the type of each element in tensor.
+ * @tparam Order The NTTP representing the order of a tensor.
+ */
+template <arithmetic T, size_type Order>
+class tensor {
    private:
     T* m_data;
     array<Order> m_extents;
@@ -69,9 +69,9 @@ namespace core {
      */
     constexpr tensor(std::initializer_list<T> values) noexcept
         : m_size(values.size()), m_strides({1}) {
-      m_extents = {m_size};
-      m_data = new T[m_size];
-      std::copy(values.begin(), values.end(), m_data);
+        m_extents = {m_size};
+        m_data = new T[m_size];
+        std::copy(values.begin(), values.end(), m_data);
     }
 
     /**
@@ -79,33 +79,33 @@ namespace core {
      * @param t_list Initializer list holding tensors.
      */
     constexpr tensor(std::initializer_list<tensor<T, Order> > t_list) {
-      size_type size{0};
-      size_type check_size{0};
-      for (const tensor<T, Order>& t : t_list) {
-        if (size == 0) {
-          m_extents[0] = t_list.size();
-          std::copy(t.m_extents.begin(), t.m_extents.begin() + Order, m_extents.begin() + 1);
-          check_size = t.size();
-        } else if (check_size != t.size()) {
-          throw std::runtime_error("Tensor dimension mismatch.");
+        size_type size{0};
+        size_type check_size{0};
+        for (const tensor<T, Order>& t : t_list) {
+            if (size == 0) {
+                m_extents[0] = t_list.size();
+                std::copy(t.m_extents.begin(), t.m_extents.begin() + Order, m_extents.begin() + 1);
+                check_size = t.size();
+            } else if (check_size != t.size()) {
+                throw std::runtime_error("Tensor dimension mismatch.");
+            }
+            size += t.size();
         }
-        size += t.size();
-      }
-      m_data = new T[size];
-      m_size = size;
+        m_data = new T[size];
+        m_size = size;
 
-      size_type acc_idx = 0;
-      for (const tensor<T, Order>& t : t_list) {
-        for (size_type idx = 0; idx < t.size(); ++idx) {
-          m_data[acc_idx++] = t.m_data[idx];
+        size_type acc_idx = 0;
+        for (const tensor<T, Order>& t : t_list) {
+            for (size_type idx = 0; idx < t.size(); ++idx) {
+                m_data[acc_idx++] = t.m_data[idx];
+            }
         }
-      }
 
-      auto prod = static_cast<float>(m_size);
-      for (size_type idx = 0; idx < Order; ++idx) {
-        prod /= m_extents[idx];
-        m_strides[idx] = static_cast<size_type>(prod);
-      }
+        auto prod = static_cast<float>(m_size);
+        for (size_type idx = 0; idx < Order; ++idx) {
+            prod /= m_extents[idx];
+            m_strides[idx] = static_cast<size_type>(prod);
+        }
     }
 
     /**
@@ -115,12 +115,12 @@ namespace core {
     constexpr tensor(const array<Order> extents)
         : m_extents(extents),
           m_size(std::reduce(extents.begin(), extents.end(), 1, std::multiplies<size_type>())) {
-      m_data = new T[m_size];
-      auto prod = static_cast<float>(m_size);
-      for (size_type idx = 0; idx < Order; ++idx) {
-        prod /= m_extents[idx];
-        m_strides[idx] = static_cast<size_type>(prod);
-      }
+        m_data = new T[m_size];
+        auto prod = static_cast<float>(m_size);
+        for (size_type idx = 0; idx < Order; ++idx) {
+            prod /= m_extents[idx];
+            m_strides[idx] = static_cast<size_type>(prod);
+        }
     }
 
     /**
@@ -132,7 +132,7 @@ namespace core {
           m_extents(rhs.m_extents),
           m_size(rhs.m_size),
           m_strides(rhs.m_strides) {
-      std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
+        std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
     }
 
     /**
@@ -140,15 +140,15 @@ namespace core {
      * @param rhs Right-hand side of the assignment.
      */
     constexpr auto& operator=(const tensor& rhs) {
-      if (this != &rhs) {
-        m_data = new T[rhs.m_size];
-        std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
+        if (this != &rhs) {
+            m_data = new T[rhs.m_size];
+            std::copy(rhs.m_data, rhs.m_data + rhs.m_size, m_data);
 
-        m_extents = rhs.m_extents;
-        m_size = rhs.m_size;
-        m_strides = rhs.m_strides;
-      }
-      return *this;
+            m_extents = rhs.m_extents;
+            m_size = rhs.m_size;
+            m_strides = rhs.m_strides;
+        }
+        return *this;
     }
 
     /**
@@ -160,7 +160,7 @@ namespace core {
           m_extents{rhs.m_extents},
           m_size{rhs.m_size},
           m_strides{rhs.m_strides} {
-      rhs.m_data = nullptr;
+        rhs.m_data = nullptr;
     }
 
     /**
@@ -168,15 +168,15 @@ namespace core {
      * @param rhs Right-hand side of the assignment.
      */
     constexpr auto& operator=(tensor&& rhs) noexcept {
-      if (this != &rhs) {
-        m_data = rhs.m_data;
-        m_extents = rhs.m_extents;
-        m_size = rhs.m_size;
-        m_strides = rhs.m_strides;
+        if (this != &rhs) {
+            m_data = rhs.m_data;
+            m_extents = rhs.m_extents;
+            m_size = rhs.m_size;
+            m_strides = rhs.m_strides;
 
-        rhs.m_data = nullptr;
-      }
-      return *this;
+            rhs.m_data = nullptr;
+        }
+        return *this;
     }
 
     /**
@@ -184,8 +184,8 @@ namespace core {
      * @param rhs Right-hand side of the assignment.
      */
     constexpr ~tensor() {
-      delete[] m_data;
-      m_data = nullptr;
+        delete[] m_data;
+        m_data = nullptr;
     }
 
     /**
@@ -193,10 +193,10 @@ namespace core {
      * @param idx Index for obtaining a value.
      */
     [[nodiscard]] constexpr auto& operator[](const size_type idx) const {
-      if (idx > m_size - 1) {
-        throw std::out_of_range("Index out of bounds.");
-      }
-      return m_data[idx];
+        if (idx > m_size - 1) {
+            throw std::out_of_range("Index out of bounds.");
+        }
+        return m_data[idx];
     }
 
     /**
@@ -204,7 +204,7 @@ namespace core {
      * @return A pointer to the underlying pointer.
      */
     [[nodiscard]] constexpr auto data() const noexcept {
-      return m_data;
+        return m_data;
     }
 
     /**
@@ -212,7 +212,7 @@ namespace core {
      * @return Extents.
      */
     [[nodiscard]] constexpr auto extents() const noexcept {
-      return m_extents;
+        return m_extents;
     }
 
     /**
@@ -220,7 +220,7 @@ namespace core {
      * @return Size of the tensor.
      */
     [[nodiscard]] constexpr auto size() const noexcept {
-      return m_size;
+        return m_size;
     }
 
     /**
@@ -229,29 +229,29 @@ namespace core {
      */
     template <size_type U>
     [[nodiscard]] constexpr auto get(const std::array<size_type, U> idxs) const {
-      size_type flat_idx = 0;
-      for (size_type idx = 0; idx < U; ++idx) {
-        flat_idx += idxs[idx] * m_strides[idx];
-      }
-
-      if constexpr (Order == U) {
-        return m_data[flat_idx];
-      }
-
-      if constexpr (Order != U) {
-        std::array<size_type, Order - U> extents;
-        std::copy(m_extents.begin() + U, m_extents.end(), extents.begin());
-
-        auto offset = std::reduce(m_extents.begin() + idxs.size(), m_extents.end(), 1,
-                                  std::multiplies<int>());
-
-        auto result = tensor<T, Order - U>(extents);
-        for (size_type idx = flat_idx; idx < flat_idx + offset; ++idx) {
-          result[idx - flat_idx] = m_data[idx];
+        size_type flat_idx = 0;
+        for (size_type idx = 0; idx < U; ++idx) {
+            flat_idx += idxs[idx] * m_strides[idx];
         }
 
-        return result;
-      }
+        if constexpr (Order == U) {
+            return m_data[flat_idx];
+        }
+
+        if constexpr (Order != U) {
+            std::array<size_type, Order - U> extents;
+            std::copy(m_extents.begin() + U, m_extents.end(), extents.begin());
+
+            auto offset = std::reduce(m_extents.begin() + idxs.size(), m_extents.end(), 1,
+                                      std::multiplies<int>());
+
+            auto result = tensor<T, Order - U>(extents);
+            for (size_type idx = flat_idx; idx < flat_idx + offset; ++idx) {
+                result[idx - flat_idx] = m_data[idx];
+            }
+
+            return result;
+        }
     }
 
     /**
@@ -261,55 +261,55 @@ namespace core {
      * @param order Order of a tensor.
      */
     constexpr const T* __print(const T* data, const size_type* extents, const size_type order) {
-      const char* p_sep = "";
-      std::cout << '{';
-      if (order > 1) {
-        for (size_type idx = 0; idx < extents[0]; ++idx) {
-          std::cout << p_sep;
-          data = __print(data, &extents[1], order - 1);
-          p_sep = ", ";
+        const char* p_sep = "";
+        std::cout << '{';
+        if (order > 1) {
+            for (size_type idx = 0; idx < extents[0]; ++idx) {
+                std::cout << p_sep;
+                data = __print(data, &extents[1], order - 1);
+                p_sep = ", ";
+            }
+        } else {
+            for (size_type idx = 0; idx < extents[0]; ++idx) {
+                std::cout << p_sep << *data++;
+                p_sep = ", ";
+            }
         }
-      } else {
-        for (size_type idx = 0; idx < extents[0]; ++idx) {
-          std::cout << p_sep << *data++;
-          p_sep = ", ";
-        }
-      }
-      std::cout << '}';
-      return data;
+        std::cout << '}';
+        return data;
     }
 
     /**
      * @brief Prints the tensor via the helper method.
      */
     constexpr void print() {
-      std::cout << "tensor ";
-      (void)__print(m_data, m_extents.data(), Order);
-      std::cout << '\n';
+        std::cout << "tensor ";
+        (void)__print(m_data, m_extents.data(), Order);
+        std::cout << '\n';
 
-      std::cout << "shape (";
-      if (m_extents.size() == 1) {
-        std::cout << m_extents[0];
-      } else {
-        for (size_type idx = 0; idx < m_extents.size() - 1; ++idx) {
-          std::cout << m_extents[idx] << ", ";
+        std::cout << "shape (";
+        if (m_extents.size() == 1) {
+            std::cout << m_extents[0];
+        } else {
+            for (size_type idx = 0; idx < m_extents.size() - 1; ++idx) {
+                std::cout << m_extents[idx] << ", ";
+            }
+            std::cout << m_extents.back();
         }
-        std::cout << m_extents.back();
-      }
-      std::cout << ')' << '\n';
+        std::cout << ')' << '\n';
 
-      std::cout << "size " << m_size << '\n';
+        std::cout << "size " << m_size << '\n';
     }
 
     /**
      * @brief Prints a flat representation of the tensor.
      */
     constexpr void flat_print() const {
-      std::cout << '{' << ' ';
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        std::cout << m_data[idx] << ' ';
-      }
-      std::cout << '}' << std::endl;
+        std::cout << '{' << ' ';
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            std::cout << m_data[idx] << ' ';
+        }
+        std::cout << '}' << std::endl;
     }
 
     /**
@@ -318,11 +318,11 @@ namespace core {
      * @return New tensor representing the result of the addition.
      */
     [[nodiscard]] constexpr auto operator+(const tensor& other) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] += other[idx];
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] += other[idx];
+        }
+        return result;
     }
 
     /**
@@ -331,11 +331,11 @@ namespace core {
      * @return New tensor representing the result of the subtraction.
      */
     [[nodiscard]] constexpr auto operator-(const tensor& other) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] -= other[idx];
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] -= other[idx];
+        }
+        return result;
     }
 
     /**
@@ -344,11 +344,11 @@ namespace core {
      * @return New tensor representing the result of the multiplication.
      */
     [[nodiscard]] constexpr auto operator*(const tensor& other) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] *= other[idx];
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] *= other[idx];
+        }
+        return result;
     }
 
     /**
@@ -357,14 +357,14 @@ namespace core {
      * @return New tensor representing the result of the division.
      */
     [[nodiscard]] constexpr auto operator/(const tensor& other) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        if (other[idx] == 0) {
-          throw std::domain_error("Division by zero.");
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            if (other[idx] == 0) {
+                throw std::domain_error("Division by zero.");
+            }
+            result[idx] /= other[idx];
         }
-        result[idx] /= other[idx];
-      }
-      return result;
+        return result;
     }
 
     /**
@@ -373,11 +373,11 @@ namespace core {
      * @return Result tensor with every value incremented by `val`.
      */
     [[nodiscard]] constexpr auto operator+(const arithmetic auto& val) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] += val;
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] += val;
+        }
+        return result;
     }
 
     /**
@@ -386,11 +386,11 @@ namespace core {
      * @return Result tensor with every value decremented by `val`.
      */
     [[nodiscard]] constexpr auto operator-(const arithmetic auto& val) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] -= val;
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] -= val;
+        }
+        return result;
     }
 
     /**
@@ -399,11 +399,11 @@ namespace core {
      * @return Result tensor with every value multiplied by `val`.
      */
     [[nodiscard]] constexpr auto operator*(const arithmetic auto& val) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] *= val;
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] *= val;
+        }
+        return result;
     }
 
     /**
@@ -412,14 +412,14 @@ namespace core {
      * @return Result tensor with every value divided by `val`.
      */
     [[nodiscard]] constexpr auto operator/(const arithmetic auto& val) const {
-      if (val == 0) {
-        throw std::domain_error("Division by zero.");
-      }
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] /= val;
-      }
-      return result;
+        if (val == 0) {
+            throw std::domain_error("Division by zero.");
+        }
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] /= val;
+        }
+        return result;
     }
 
     /**
@@ -428,18 +428,18 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator==(const tensor& other) const {
-      if (m_size != other.size()) {
-        return false;
-      }
-      if (m_extents != other.extents()) {
-        return false;
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] != other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            return false;
         }
-      }
-      return true;
+        if (m_extents != other.extents()) {
+            return false;
+        }
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] != other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -448,18 +448,18 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator!=(const tensor& other) const {
-      if (m_size != other.size()) {
-        return true;
-      }
-      if (m_extents != other.extents()) {
-        return true;
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] == other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            return true;
         }
-      }
-      return true;
+        if (m_extents != other.extents()) {
+            return true;
+        }
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] == other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -468,18 +468,18 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator>(const tensor& other) const {
-      if (m_size != other.size()) {
-        throw std::runtime_error("Tensor size mismatch.");
-      }
-      if (m_extents != other.extents()) {
-        throw std::runtime_error("Tensor dimension mismatch.");
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] <= other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
         }
-      }
-      return true;
+        if (m_extents != other.extents()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] <= other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -488,15 +488,15 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator>=(const tensor& other) const {
-      if (m_size != other.size()) {
-        throw std::runtime_error("Tensor size mismatch.");
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] < other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
         }
-      }
-      return true;
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] < other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -505,18 +505,18 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator<(const tensor& other) const {
-      if (m_size != other.size()) {
-        throw std::runtime_error("Tensor size mismatch.");
-      }
-      if (m_extents != other.extents()) {
-        throw std::runtime_error("Tensor dimension mismatch.");
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] >= other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
         }
-      }
-      return true;
+        if (m_extents != other.extents()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] >= other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -525,18 +525,18 @@ namespace core {
      * @return `true` if the comparison holds, `false` otherwise.
      */
     [[nodiscard]] constexpr auto operator<=(const tensor& other) const {
-      if (m_size != other.size()) {
-        throw std::runtime_error("Tensor size mismatch.");
-      }
-      if (m_extents != other.extents()) {
-        throw std::runtime_error("Tensor dimension mismatch.");
-      }
-      for (size_type idx = 0; idx < m_size; ++idx) {
-        if (m_data[idx] > other[idx]) {
-          return false;
+        if (m_size != other.size()) {
+            throw std::runtime_error("Tensor size mismatch.");
         }
-      }
-      return true;
+        if (m_extents != other.extents()) {
+            throw std::runtime_error("Tensor dimension mismatch.");
+        }
+        for (size_type idx = 0; idx < m_size; ++idx) {
+            if (m_data[idx] > other[idx]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -545,11 +545,11 @@ namespace core {
      * @return Tensor with every value transformed via the power function.
      */
     [[nodiscard]] constexpr auto pow(const arithmetic auto exp) const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::pow(result[idx], exp);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::pow(result[idx], exp);
+        }
+        return result;
     }
 
     /**
@@ -557,11 +557,11 @@ namespace core {
      * @return Tensor with every value transformed via the square function.
      */
     [[nodiscard]] constexpr auto square() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::pow(result[idx], 2);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::pow(result[idx], 2);
+        }
+        return result;
     }
 
     /**
@@ -569,11 +569,11 @@ namespace core {
      * @return Tensor with every value transformed via the square root function.
      */
     [[nodiscard]] constexpr auto sqrt() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::sqrt(result[idx]);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::sqrt(result[idx]);
+        }
+        return result;
     }
 
     /**
@@ -581,11 +581,11 @@ namespace core {
      * @return Tensor with every value transformed via the sine function.
      */
     [[nodiscard]] constexpr auto sin() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::sin(result[idx]);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::sin(result[idx]);
+        }
+        return result;
     }
 
     /**
@@ -593,11 +593,11 @@ namespace core {
      * @return Tensor with every value transformed via the cosine function.
      */
     [[nodiscard]] constexpr auto cos() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::cos(result[idx]);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::cos(result[idx]);
+        }
+        return result;
     }
 
     /**
@@ -605,11 +605,11 @@ namespace core {
      * @return Tensor with every value transformed via the tangent function.
      */
     [[nodiscard]] constexpr auto tan() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::tan(result[idx]);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::tan(result[idx]);
+        }
+        return result;
     }
 
     /**
@@ -617,13 +617,13 @@ namespace core {
      * @return Tensor with every value transformed via the round function.
      */
     [[nodiscard]] constexpr auto round() const {
-      auto result = *this;
-      for (size_type idx = 0; idx < result.size(); ++idx) {
-        result[idx] = std::round(result[idx]);
-      }
-      return result;
+        auto result = *this;
+        for (size_type idx = 0; idx < result.size(); ++idx) {
+            result[idx] = std::round(result[idx]);
+        }
+        return result;
     }
-  };
+};
 
 }  // namespace core
 

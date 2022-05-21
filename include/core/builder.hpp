@@ -29,120 +29,120 @@
 
 namespace builder {
 
-  /**
-   * @brief Constructs a tensor of zeros from the provided extents.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param extents Extents for constructing a tensor of zeros.
-   * @return A tensor of zeros with the provided extents.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto zeros(const array<Order>& extents) {
+/**
+ * @brief Constructs a tensor of zeros from the provided extents.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param extents Extents for constructing a tensor of zeros.
+ * @return A tensor of zeros with the provided extents.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto zeros(const array<Order>& extents) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
-      result[idx] = static_cast<T>(0);
+        result[idx] = static_cast<T>(0);
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs a tensor of ones from the provided extents.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param extents Extents for constructing a tensor of ones.
-   * @return A tensor of ones with the provided extents.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto ones(const array<Order>& extents) {
+/**
+ * @brief Constructs a tensor of ones from the provided extents.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param extents Extents for constructing a tensor of ones.
+ * @return A tensor of ones with the provided extents.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto ones(const array<Order>& extents) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
-      result[idx] = static_cast<T>(1);
+        result[idx] = static_cast<T>(1);
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs a tensor of specified values from the provided extents.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param extents Extents for constructing a tensor of specified values.
-   * @return A tensor of specified values with the provided extents.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto xs(const array<Order>& extents, const T x) {
+/**
+ * @brief Constructs a tensor of specified values from the provided extents.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param extents Extents for constructing a tensor of specified values.
+ * @return A tensor of specified values with the provided extents.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto xs(const array<Order>& extents, const T x) {
     auto result = core::tensor<T, Order>(extents);
     for (size_type idx = 0; idx < result.size(); ++idx) {
-      result[idx] = x;
+        result[idx] = x;
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs a tensor of zeros from the extents of the provided tensor.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param t Tensor to match the extents against.
-   * @return A tensor of zeros with the extents of the provided tensor.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto zeros_like(const core::tensor<T, Order>& t) {
+/**
+ * @brief Constructs a tensor of zeros from the extents of the provided tensor.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param t Tensor to match the extents against.
+ * @return A tensor of zeros with the extents of the provided tensor.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto zeros_like(const core::tensor<T, Order>& t) {
     auto result = core::tensor<T, Order>(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
-      result[idx] = static_cast<T>(0);
+        result[idx] = static_cast<T>(0);
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs a tensor of ones from the extents of the provided tensor.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param t Tensor to match the extents against.
-   * @return A tensor of ones with the extents of the provided tensor.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto ones_like(const core::tensor<T, Order>& t) {
+/**
+ * @brief Constructs a tensor of ones from the extents of the provided tensor.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param t Tensor to match the extents against.
+ * @return A tensor of ones with the extents of the provided tensor.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto ones_like(const core::tensor<T, Order>& t) {
     auto result = core::tensor<T, Order>(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
-      result[idx] = static_cast<T>(1);
+        result[idx] = static_cast<T>(1);
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs a tensor of specified values from the extents of the provided tensor.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @tparam Order Order of the tensor.
-   * @param t Tensor to match the extents against.
-   * @return A tensor of specified values with the extents of the provided tensor.
-   */
-  template <arithmetic T, size_type Order>
-  [[nodiscard]] constexpr auto xs_like(const core::tensor<T, Order>& t, const T x) {
+/**
+ * @brief Constructs a tensor of specified values from the extents of the provided tensor.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @tparam Order Order of the tensor.
+ * @param t Tensor to match the extents against.
+ * @return A tensor of specified values with the extents of the provided tensor.
+ */
+template <arithmetic T, size_type Order>
+[[nodiscard]] constexpr auto xs_like(const core::tensor<T, Order>& t, const T x) {
     auto result = core::tensor(t.extents());
     for (size_type idx = 0; idx < t.size(); ++idx) {
-      result[idx] = x;
+        result[idx] = x;
     }
     return result;
-  }
+}
 
-  /**
-   * @brief Constructs an order one tensor including values from begin to end with the given stride.
-   * @tparam T Arithmetic type representing the type of every element in the returned tensor.
-   * @param begin Start of the range.
-   * @param end End of the range.
-   * @param stride Stride for the range.
-   * @return An order one tensor of values specified by the provided range and stride.
-   */
-  template <arithmetic T>
-  [[nodiscard]] constexpr auto range1(const T begin, const T end, const T stride) {
+/**
+ * @brief Constructs an order one tensor including values from begin to end with the given stride.
+ * @tparam T Arithmetic type representing the type of every element in the returned tensor.
+ * @param begin Start of the range.
+ * @param end End of the range.
+ * @param stride Stride for the range.
+ * @return An order one tensor of values specified by the provided range and stride.
+ */
+template <arithmetic T>
+[[nodiscard]] constexpr auto range1(const T begin, const T end, const T stride) {
     auto extents = std::array<size_type, 1>{static_cast<size_type>((end - begin) / stride)};
     auto result = core::tensor<T, 1>(extents);
     size_type idx = 0;
     for (T val = begin; val < end; val += stride) {
-      result[idx++] = val;
+        result[idx++] = val;
     }
     return result;
-  }
+}
 
 }  // namespace builder
 
