@@ -1,6 +1,6 @@
 # tensor
 
-A fast, zero-dependency tensor library in C++.
+A fast, zero-dependency tensor library in under 1000 lines of C++.
 
 ## API
 
